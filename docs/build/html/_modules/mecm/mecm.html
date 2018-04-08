@@ -1,0 +1,955 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="python" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="python" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mecm.mecm &mdash; mecm 0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> mecm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mecm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mecm.mecm</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mecm.mecm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Author: Quentin Baghi 2017</span>
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># This routine perform the Modified expectation maximization algorithm (M-ECM)</span>
+<span class="c1"># based on missing data imputation by conditional distribution using FFT.</span>
+<span class="c1"># ==============================================================================</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cvxopt</span>
+<span class="kn">from</span> <span class="nn">cvxopt</span> <span class="k">import</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">spmatrix</span><span class="p">,</span> <span class="n">amd</span><span class="p">,</span> <span class="n">cholmod</span><span class="p">,</span> <span class="n">umfpack</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">sparse</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">interpolate</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">LA</span>
+<span class="kn">import</span> <span class="nn">pyfftw</span>
+<span class="kn">from</span> <span class="nn">pyfftw.interfaces.numpy_fft</span> <span class="k">import</span> <span class="n">fft</span><span class="p">,</span> <span class="n">ifft</span>
+<span class="n">pyfftw</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="c1">#from numba import jit</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">.matrixalgebra</span> <span class="k">import</span> <span class="o">*</span> <span class="c1">#covLinearOp,precondLinearOp,matPrecondBiCGSTAB,precondBiCGSTAB,matVectProd,printPCGstatus</span>
+<span class="kn">from</span> <span class="nn">.noise</span> <span class="k">import</span> <span class="n">generateNoiseFromDSP</span><span class="p">,</span> <span class="n">symmetrize</span>
+<span class="kn">from</span> <span class="nn">.leastsquares</span> <span class="k">import</span> <span class="n">pmesureWeighted</span><span class="p">,</span><span class="n">pmesure_optimized_TF</span>
+<span class="kn">from</span> <span class="nn">.localestimator</span> <span class="k">import</span> <span class="n">nextpow2</span><span class="p">,</span><span class="n">PSD_estimate</span>
+
+
+
+<div class="viewcode-block" id="maxlike"><a class="viewcode-back" href="../../mecm.html#mecm.maxlike">[docs]</a><span class="k">def</span> <span class="nf">maxlike</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">N_it_max</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">Nd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">N_est</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">Nit_cg</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+<span class="n">tol_cg</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span><span class="n">compute_cov</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">PCGalgo</span> <span class="o">=</span> <span class="s1">&#39;scipy&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function estimating the regression parameters for a problem of</span>
+<span class="sd">    multivariate Gaussian maximum likelihood with missing data,</span>
+<span class="sd">    using the M-ECM algorithm.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : numpy array (size N)</span>
+<span class="sd">        masked data vector</span>
+<span class="sd">    M : numpy array (size N)</span>
+<span class="sd">        mask vector (with entries equal to 0 or 1)</span>
+<span class="sd">    A : numpy array (size N x K)</span>
+<span class="sd">        design matrix (contains partial derivatives of signal wrt parameters)</span>
+<span class="sd">    N_it_max : scalar integer</span>
+<span class="sd">        number of iterations of the M-ECM algorithm</span>
+<span class="sd">    eps : scalar float</span>
+<span class="sd">        tolerance criterium to stop the algorithm (default is 1e-8)</span>
+<span class="sd">    p : scalar integer</span>
+<span class="sd">        number of lags to calculate the tapered approximation of the</span>
+<span class="sd">        autocoariance function. This is needed to pre-conditionate the conjugate</span>
+<span class="sd">        gradients.</span>
+<span class="sd">    Nd : scalar integer</span>
+<span class="sd">        number of Monte-Carlo draws to estimate the conditional expectation of</span>
+<span class="sd">        the noise periodogram with respect to the observed data</span>
+<span class="sd">    N_est : scalar integer</span>
+<span class="sd">        number of frequency points where to estimate the noise power spectral</span>
+<span class="sd">        density (on a logarithmic grid)</span>
+<span class="sd">    N_it_cg : scalar integer</span>
+<span class="sd">        maximum number of iterations for the conjugate gradient algorithm.</span>
+<span class="sd">    tol_cg : scalar float</span>
+<span class="sd">        tolerance criterium to stop the PCG algorithm (default is 1e-7)</span>
+<span class="sd">    verbose : boolean</span>
+<span class="sd">        if True, a message is printed at the end of each iteration, displaying</span>
+<span class="sd">        the value of the convergence criterion</span>
+<span class="sd">    compute_cov : boolean</span>
+<span class="sd">        if True, the covariance of the estimator is computed</span>
+<span class="sd">    PCGalgo : string {&#39;mine&#39;,&#39;scipy&#39;,&#39;scipy.bicgstab&#39;,&#39;scipy.bicg&#39;,&#39;scipy.cg&#39;,&#39;scipy.cgs&#39;}</span>
+<span class="sd">        Type of preconditioned conjugate gradient (PCG) algorithm to use among</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    beta_new : array_like (size K)</span>
+<span class="sd">        final value of the estimated parameter vector</span>
+<span class="sd">    cov : None or array_like (size K x K)</span>
+<span class="sd">        estimated covariance matrix of the parameter vector. If compute_cov is</span>
+<span class="sd">        False, then cov is None</span>
+<span class="sd">    beta : array_like (size N_iterations x K)</span>
+<span class="sd">        vector storing the updates of the parameter vector at each iteration</span>
+<span class="sd">    y_rec : array_like (size N)</span>
+<span class="sd">        reconstructed data vector, i.e. conditional expectation of the data</span>
+<span class="sd">        given the available observations.</span>
+<span class="sd">    I_condMean : array_like (size N)</span>
+<span class="sd">        conditional expectation of the noise periodogram</span>
+<span class="sd">    PSD : PSD_estimate class instance</span>
+<span class="sd">        class containing all the information regarding the estimated noise PSD</span>
+
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [1] Q. Baghi et al, &quot;Gaussian regression and power spectral density estimation with missing data: The MICROSCOPE space mission as a case study,&quot; Physical Review D, vol. 93, num. 12, 2016</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># First guess: ordinary least squares</span>
+    <span class="n">beta0</span> <span class="o">=</span> <span class="n">pmesureWeighted</span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">M</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+    <span class="n">beta0_norm</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">beta0</span><span class="p">)</span>
+
+    <span class="c1"># Initialization of variables</span>
+    <span class="n">beta_old</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">beta0</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">beta_vect</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">beta0</span><span class="p">)</span>
+    <span class="n">beta_new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">beta0</span><span class="p">)</span>
+
+
+
+    <span class="c1"># Difference from one update to the other</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="c1"># Number of data points</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="c1"># Number of Fourier frequencies used for the spectrum calculation</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">nextpow2</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="p">))</span>
+
+    <span class="c1"># Number of positive Fourier frequencies</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span> <span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span> <span class="p">)</span>
+
+    <span class="c1"># Extended mask to the circulant process</span>
+    <span class="n">PSD</span> <span class="o">=</span> <span class="n">PSD_estimate</span><span class="p">(</span><span class="n">N_est</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">P</span><span class="p">,</span><span class="n">h_min</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">h_max</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+    <span class="c1"># PSD initialization</span>
+    <span class="n">PSD</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">beta0</span><span class="p">)))</span>
+    <span class="n">S_N</span> <span class="o">=</span> <span class="n">PSD</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">S_2N</span> <span class="o">=</span> <span class="n">PSD</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+
+    <span class="n">diff</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="s1">&#39;scipy&#39;</span> <span class="ow">in</span> <span class="n">PCGalgo</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The chosen preconditioned conjugate gradient algorithm is from scipy.&quot;</span><span class="p">)</span>
+
+
+    <span class="k">while</span> <span class="p">(</span> <span class="p">(</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">counter</span> <span class="o">&lt;=</span> <span class="n">N_it_max</span><span class="p">)</span> <span class="p">)</span> <span class="p">:</span>
+
+        <span class="c1"># The new beta becomes the old one</span>
+        <span class="n">beta_old</span> <span class="o">=</span> <span class="n">beta_new</span>
+
+        <span class="c1"># E step : missing data reconstruction</span>
+        <span class="c1"># ------------------------------------</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">ifft</span><span class="p">(</span><span class="n">S_2N</span><span class="p">))</span>
+        <span class="n">y_rec</span><span class="p">,</span><span class="n">solver</span> <span class="o">=</span> <span class="n">conjGradImputation</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">beta_old</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">Nit_cg</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="n">tol_cg</span><span class="p">)</span>
+
+        <span class="c1"># Conditional draws</span>
+        <span class="n">condDraws</span> <span class="o">=</span> <span class="n">conditionalMonteCarlo</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">beta_old</span><span class="p">)),</span><span class="n">solver</span><span class="p">,</span><span class="n">M</span><span class="p">,</span>
+        <span class="n">Nd</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">Nit_cg</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="n">tol_cg</span><span class="p">)</span>
+        <span class="c1"># Periodogram of the draws</span>
+        <span class="n">I_mat</span> <span class="o">=</span> <span class="n">periodogram</span><span class="p">(</span><span class="n">condDraws</span><span class="p">,</span><span class="n">condDraws</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Conditional average</span>
+        <span class="n">I_condMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I_mat</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1">#logI_condMean = np.mean( np.log(I_mat,axis=0) )</span>
+
+
+        <span class="c1"># CE1 step : estimation of deterministic model parameters</span>
+        <span class="c1"># -------------------------------------------------------</span>
+        <span class="n">beta_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">pmesure_optimized_TF</span><span class="p">(</span><span class="n">y_rec</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">S_N</span><span class="p">))</span>
+        <span class="n">beta_vect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span> <span class="p">(</span><span class="n">beta_vect</span><span class="p">,</span><span class="n">beta_new</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="c1"># CE2 step : estimation of noise model parameters (PSD)</span>
+        <span class="c1"># -------------------------------------------------------</span>
+        <span class="n">PSD</span><span class="o">.</span><span class="n">MLestimateFromI</span><span class="p">(</span><span class="n">I_condMean</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">S_N</span> <span class="o">=</span> <span class="n">PSD</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="n">S_2N</span> <span class="o">=</span> <span class="n">PSD</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+
+
+        <span class="c1"># Update counter</span>
+        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># Calculate the relative difference between new update and old</span>
+        <span class="c1"># parameter estimate</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">beta_new</span><span class="o">-</span><span class="n">beta_old</span><span class="p">)</span><span class="o">/</span><span class="n">beta0_norm</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--------------------------&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Iteration &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; completed, de/e =&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--------------------------&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;------ MECM iterations completed. ------&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Attention: MECM algorithm ended </span><span class="se">\</span>
+<span class="s2">        without reaching the specified convergence criterium.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current criterium: &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">eps</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computation of the covariance...&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">compute_cov</span><span class="p">:</span>
+        <span class="n">cov</span><span class="p">,</span><span class="n">U</span> <span class="o">=</span> <span class="n">mecmcovariance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solver</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">Nit</span><span class="o">=</span><span class="n">Nit_cg</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="n">tol_cg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+    <span class="k">return</span> <span class="n">beta_new</span><span class="p">,</span><span class="n">cov</span><span class="p">,</span><span class="n">beta_vect</span><span class="p">,</span><span class="n">y_rec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">],</span><span class="n">I_condMean</span><span class="p">,</span><span class="n">PSD</span></div>
+
+
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="mecmcovariance"><a class="viewcode-back" href="../../mecm.html#mecm.mecmcovariance">[docs]</a><span class="k">def</span> <span class="nf">mecmcovariance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">Nit</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function estimating the covariance of regression parameters for a problem of</span>
+<span class="sd">    multivariate Gaussian maximum likelihood with missing data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : numpy array (size N x K)</span>
+<span class="sd">        design matrix (contains partial derivatives of signal wrt parameters)</span>
+<span class="sd">    M : numpy array (size N)</span>
+<span class="sd">        mask vector (with entries equal to 0 or 1)</span>
+<span class="sd">    S_2N : numpy array (size P &gt;= 2N)</span>
+<span class="sd">        PSD vector</span>
+<span class="sd">    solve : sparse.linalg.factorized instance</span>
+<span class="sd">        linear operator which calculates x = C_OO^{-1} b for any vector b</span>
+<span class="sd">    Nit : scalar integer, optional</span>
+<span class="sd">        maximum number of iterations for the conjugate gradient algorithm.</span>
+<span class="sd">    tol : scalar float, optional</span>
+<span class="sd">        tolerance criterium to stop the PCG algorithm (default is 1e-7)</span>
+<span class="sd">    r : scalar float, optional (default is 1e-15)</span>
+<span class="sd">        Cutoff for small singular values when computing the inverse matrix.</span>
+<span class="sd">        Singular values smaller (in modulus) than rcond * largest_singular_value</span>
+<span class="sd">        (in modulus) are set to zero.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cov : array_like (size K x K)</span>
+<span class="sd">        estimated covariance matrix of the parameter vector</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The chosen BICGSTAB algorithm is scipy code.&quot;</span><span class="p">)</span>
+
+    <span class="n">A_obs</span> <span class="o">=</span>  <span class="n">A</span><span class="p">[</span><span class="n">M</span><span class="o">==</span><span class="mi">1</span><span class="p">,:]</span>
+    <span class="p">(</span><span class="n">N_o</span><span class="p">,</span><span class="n">K</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">A_obs</span><span class="p">)</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_o</span><span class="p">,</span><span class="n">K</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="c1"># Missing data indices</span>
+    <span class="n">ind_mis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">==</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ind_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">!=</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+    <span class="c1"># Construct the operator calculating C_OO*x precondBiCGSTAB(x0,b,A_func,Nit,stp,P)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_o</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">PCGalgo</span> <span class="o">==</span> <span class="s1">&#39;mine&#39;</span><span class="p">:</span>
+        <span class="n">Coo_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">matVectProd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
+        <span class="n">U</span> <span class="o">=</span> <span class="n">matPrecondBiCGSTAB</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">A_obs</span><span class="p">,</span><span class="n">Coo_func</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">PCGalgo</span><span class="o">=</span><span class="n">PCGalgo</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;scipy&#39;</span> <span class="ow">in</span> <span class="n">PCGalgo</span><span class="p">:</span>
+        <span class="n">Coo_op</span> <span class="o">=</span> <span class="n">covLinearOp</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
+        <span class="n">P_op</span> <span class="o">=</span> <span class="n">precondLinearOp</span><span class="p">(</span><span class="n">solve</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">))</span>
+        <span class="n">U</span> <span class="o">=</span> <span class="n">matPrecondBiCGSTAB</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">A_obs</span><span class="p">,</span><span class="n">Coo_op</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">P_op</span><span class="p">,</span><span class="n">PCGalgo</span><span class="o">=</span><span class="n">PCGalgo</span><span class="p">)</span>
+        <span class="c1">#innerPrecondBiCGSTAB(U,x0,A_obs,Coo_op,Nit,tol,P_op,PCGalgo)</span>
+
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="n">LA</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">A_obs</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">U</span> <span class="p">)</span> <span class="p">,</span><span class="n">rcond</span><span class="o">=</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="s2">&quot;SVD did not converge&quot;</span>
+
+
+    <span class="k">return</span> <span class="n">cov</span><span class="p">,</span><span class="n">U</span></div>
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="periodogram"><a class="viewcode-back" href="../../mecm.html#mecm.periodogram">[docs]</a><span class="k">def</span> <span class="nf">periodogram</span><span class="p">(</span><span class="n">x_mat</span><span class="p">,</span><span class="n">nfft</span><span class="p">,</span><span class="n">wind</span> <span class="o">=</span> <span class="s1">&#39;hanning&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function computing the periodogram of the input data with a specified number</span>
+<span class="sd">    of Fourier frequencies nfft (possible zero-padding) and apodization window.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_mat : numpy array (size Nd x N)</span>
+<span class="sd">        data for which the periodogram must be computed. Can be a one-dimentional</span>
+<span class="sd">        vector or a matrix containing a time series in each row. The function</span>
+<span class="sd">        computes as many periodograms as there are rows in x_mat, and returns</span>
+<span class="sd">        a matrix of same size as x_mat.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Per : numpy array (size Nd x N)</span>
+<span class="sd">        matrix (or vector) of periodogram</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x_mat</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">:</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_mat</span><span class="p">)</span>
+        <span class="c1"># Windowing</span>
+        <span class="k">if</span> <span class="n">wind</span> <span class="o">==</span> <span class="s1">&#39;hanning&#39;</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">wind</span> <span class="o">==</span> <span class="s1">&#39;ones&#39;</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">wind</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Window argument is wrong&quot;</span><span class="p">)</span>
+
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Per</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">fft</span><span class="p">(</span> <span class="n">x_mat</span><span class="o">*</span><span class="n">w</span><span class="p">,</span> <span class="n">nfft</span> <span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">K2</span>
+
+    <span class="k">elif</span> <span class="n">l</span><span class="o">==</span><span class="mi">2</span> <span class="p">:</span>
+        <span class="p">(</span><span class="n">Nd</span><span class="p">,</span><span class="n">N</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x_mat</span><span class="p">)</span>
+        <span class="c1"># Windowing</span>
+        <span class="k">if</span> <span class="n">wind</span> <span class="o">==</span> <span class="s1">&#39;hanning&#39;</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">wind</span> <span class="o">==</span> <span class="s1">&#39;ones&#39;</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wind</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">wind</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Window argument is wrong&quot;</span><span class="p">)</span>
+
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Per</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">fft</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">x_mat</span><span class="p">,</span><span class="n">w</span><span class="p">),</span> <span class="n">n</span> <span class="o">=</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">K2</span>
+
+    <span class="k">return</span> <span class="n">Per</span></div>
+
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="conditionalDraw"><a class="viewcode-back" href="../../mecm.html#mecm.conditionalDraw">[docs]</a><span class="k">def</span> <span class="nf">conditionalDraw</span><span class="p">(</span><span class="n">Np</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solver</span><span class="p">,</span><span class="n">z_o</span><span class="p">,</span><span class="n">mu_m_given_o</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span>
+<span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function performing random draws of the complete data noise vector</span>
+<span class="sd">    conditionnaly on the observed data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Np : scalar integer</span>
+<span class="sd">        Size of the initial random vector which is drawn. The initial vector</span>
+<span class="sd">        follows a stationary distribution whose covariance matrix is circulant.</span>
+<span class="sd">        It is then truncated to N_final to obtain the desired distribution whose</span>
+<span class="sd">        covariance matrix is Toeplitz.</span>
+<span class="sd">    Nit : scalar integer</span>
+<span class="sd">        Maximum number of conjugate gradient iterations.</span>
+<span class="sd">    S_2N : numpy array (size P &gt;= 2N)</span>
+<span class="sd">        PSD vector</span>
+<span class="sd">    Coo_func : function</span>
+<span class="sd">        Linear operator that calculates the matrix-to-vector product Coo x for</span>
+<span class="sd">        any vector x of size No (number of observed data points)</span>
+<span class="sd">    solver : sparse.linalg.factorized instance</span>
+<span class="sd">        linear operator which calculates x = C_OO^{-1} b for any vector b</span>
+<span class="sd">    z_o : array_like (size No)</span>
+<span class="sd">        vector of observed residuals</span>
+<span class="sd">    mu_m_given_o : array_like (size Nm)</span>
+<span class="sd">        vector of conditional expectation of the missing data given the observed</span>
+<span class="sd">        data</span>
+<span class="sd">    ind_obs : array_like (size No)</span>
+<span class="sd">        vector of chronological indices of the observed data points in the</span>
+<span class="sd">        complete data vector</span>
+<span class="sd">    ind_mis : array_like (size No)</span>
+<span class="sd">        vector of chronological indices of the missing data points in the</span>
+<span class="sd">        complete data vector</span>
+<span class="sd">    M : numpy array (size N)</span>
+<span class="sd">        mask vector (with entries equal to 0 or 1)</span>
+<span class="sd">    tol : scalar float</span>
+<span class="sd">        Stoping criteria for the conjugate gradient algorithm, optional</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eps : numpy array (size N)</span>
+<span class="sd">        realization of the vector of conditional noise given the observed data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># New implementation: the size of the vector that is randomly drawn is</span>
+    <span class="c1"># equal to the size of the mask. If one wants a larger vector, one must</span>
+    <span class="c1"># have to zero-pad the mask: M = np.concatenate((M,np.zeros(Npad)))</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">DSP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">S_2N</span><span class="o">*</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">v</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">generateNoiseFromDSP</span><span class="p">(</span><span class="n">DSP</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="c1">#v = np.array([random.gauss(0,1.) for _ in range(Np)])</span>
+    <span class="c1">#e = np.sqrt(Np/np.float(N_final))*np.sqrt(Np)*np.real( ifft( np.sqrt(S_2N) * v )[0:N_final] )</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">])))</span>
+
+    <span class="c1">#u0 = solve(e[self.ind_obs])</span>
+
+    <span class="n">N_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">)</span>
+    <span class="n">u0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_o</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">])</span>
+    <span class="c1">#stop = 0</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">PCGsolve</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">e</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">],</span><span class="n">u0</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">solver</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">)</span>
+
+    <span class="c1">#u,sr = conjugateGradientSolvePrecond(u0,e[ind_obs],Coo_func,Nit,stop,solver)</span>
+
+    <span class="n">u_m_o</span> <span class="o">=</span> <span class="n">matVectProd</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="c1"># Observed data points</span>
+    <span class="n">eps</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">]</span> <span class="o">=</span> <span class="n">z_o</span>
+    <span class="c1"># Missing data points and extension to 2N points</span>
+    <span class="n">eps</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu_m_given_o</span> <span class="o">+</span> <span class="n">e</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_m_o</span>
+
+    <span class="k">return</span> <span class="n">eps</span></div>
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="conditionalMonteCarlo"><a class="viewcode-back" href="../../mecm.html#mecm.conditionalMonteCarlo">[docs]</a><span class="k">def</span> <span class="nf">conditionalMonteCarlo</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">Nd</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function performing random draws of the complete data noise vector</span>
+<span class="sd">    conditionnaly on the observed data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eps : numpy array (size N)</span>
+<span class="sd">        input vector of residuals (difference between data and model)</span>
+<span class="sd">    solve : sparse.linalg.factorized instance</span>
+<span class="sd">        linear operator which calculates x = C_OO^{-1} b for any vector b</span>
+<span class="sd">    M : numpy array (size N)</span>
+<span class="sd">        mask vector (with entries equal to 0 or 1)</span>
+<span class="sd">    S_2N : numpy array (size P &gt;= 2N)</span>
+<span class="sd">        PSD vector</span>
+<span class="sd">    Nit : scalar integer</span>
+<span class="sd">        Maximum number of conjugate gradient iterations.</span>
+<span class="sd">    seed : character string, optional</span>
+<span class="sd">        Regenerate the seed with system time (if None) or chosen integer.</span>
+<span class="sd">    tol : scalar float</span>
+<span class="sd">        Stoping criteria for the conjugate gradient algorithm, optional</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    condDraws : numpy array (size Nd x N)</span>
+<span class="sd">        Matrix whose rows are realization of the conditional noise vector</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Missing data indices</span>
+    <span class="n">ind_mis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">==</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ind_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">!=</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">Np</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S_2N</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the residuals at the observed data points</span>
+    <span class="n">eps_o</span> <span class="o">=</span> <span class="n">eps</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">]</span>
+
+    <span class="c1"># Calculate the conditional mean</span>
+    <span class="n">N_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_o</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">PCGsolve</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">eps_o</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">)</span>
+
+    <span class="c1">#u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps_o,Coo_func,Nit,np.std(eps_o),solve)</span>
+    <span class="n">mu_m_given_o</span> <span class="o">=</span> <span class="n">matVectProd</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
+    <span class="c1"># Calculate the stopping criteria</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">eps_o</span><span class="p">)</span>
+
+    <span class="n">condDraws</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nd</span><span class="p">,</span><span class="n">N</span><span class="p">))</span>
+    <span class="c1"># Regenerate the seed with system time or chosen integer</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># ==========================================================================</span>
+    <span class="c1"># Without parallelization:</span>
+    <span class="c1"># ==========================================================================</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nd</span><span class="p">):</span>
+        <span class="n">condDraws</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">conditionalDraw</span><span class="p">(</span><span class="n">Np</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">eps_o</span><span class="p">,</span><span class="n">mu_m_given_o</span><span class="p">,</span>
+        <span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">condDraws</span></div>
+
+
+
+
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="buildSparseCov2"><a class="viewcode-back" href="../../mecm.html#mecm.buildSparseCov2">[docs]</a><span class="k">def</span> <span class="nf">buildSparseCov2</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">form</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland2&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function constructs a sparse matrix which is a tappered, approximate</span>
+<span class="sd">    version of the covariance matrix of a stationary process of autocovariance</span>
+<span class="sd">    function R and size N x N.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    R : numpy array</span>
+<span class="sd">        input autocovariance functions at each lag (size N)</span>
+<span class="sd">    p : scalar integer</span>
+<span class="sd">        number of lags to calculate the tapered approximation of the</span>
+<span class="sd">        autocoariance function.</span>
+<span class="sd">    N : scalar integer</span>
+<span class="sd">        Size of the complete data vector</span>
+<span class="sd">    form : character string (or None), optional</span>
+<span class="sd">        storage format of the sparse matrix (default is None)</span>
+<span class="sd">    taper : string</span>
+<span class="sd">        type of taper function to smoothly decrease the tapered covariance</span>
+<span class="sd">        function down to zero.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    C_tap : scipy.sparse matrix</span>
+<span class="sd">        Tappered covariance matrix (size N x N) with p non-zero diagonals.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="n">tap</span> <span class="o">=</span> <span class="n">taperCovariance</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">N</span><span class="p">),</span><span class="n">p</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="n">taper</span><span class="p">)</span>
+    <span class="n">R_tap</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">]</span><span class="o">*</span><span class="n">tap</span>
+
+    <span class="c1"># calculate the rows and columns indices of the non-zero values</span>
+    <span class="c1"># Do it diagonal per diagonal</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="n">Rf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">*</span><span class="n">R_tap</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Rf</span><span class="p">)</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="p">))</span>
+
+
+
+        <span class="c1"># Symmetric values</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">!=</span><span class="mi">0</span> <span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Rf</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="o">-</span><span class="n">i</span><span class="p">))</span>
+
+
+    <span class="k">return</span> <span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="n">form</span><span class="p">)</span></div>
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="conjGradImputation"><a class="viewcode-back" href="../../mecm.html#mecm.conjGradImputation">[docs]</a><span class="k">def</span> <span class="nf">conjGradImputation</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function performing universal kriging with the model y = A beta + n</span>
+<span class="sd">    using the conjugate gradient algorithm to solve for C_OO x = b.</span>
+<span class="sd">    But this imputation function can be generalized to any solver algorithm.</span>
+<span class="sd">    See &quot;imputation&quot; function for a more general formulation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : array_like (size N)</span>
+<span class="sd">        Input signal array</span>
+<span class="sd">    A : numpy array (size N x K)</span>
+<span class="sd">        design matrix (contains partial derivatives of signal wrt parameters)</span>
+<span class="sd">    beta : array_like (size K)</span>
+<span class="sd">        regression parameter vector</span>
+<span class="sd">    M : numpy array (size N)</span>
+<span class="sd">        mask vector (with entries equal to 0 or 1)</span>
+<span class="sd">    S_2N : numpy array (size P)</span>
+<span class="sd">        spectrum array: value of the unilateral PSD times fs</span>
+<span class="sd">    R : numpy array (size P)</span>
+<span class="sd">        tappered autocovariance array: value of the autocovariance at all lags</span>
+<span class="sd">    p : scalar integer</span>
+<span class="sd">        number of lags to calculate the tapered approximation of the</span>
+<span class="sd">        autocoariance function. This is needed to pre-conditionate the conjugate</span>
+<span class="sd">        gradients.</span>
+<span class="sd">    Nit : scalar integer</span>
+<span class="sd">        maximum number of iterations for the conjugate gradient algorithm</span>
+<span class="sd">    tol : scalar float</span>
+<span class="sd">        tolerance criterium to stop the PCG algorithm</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z : float or ndarray</span>
+<span class="sd">        conditional expectation of the data vector</span>
+<span class="sd">    solve : sparse.linalg.factorized instance</span>
+<span class="sd">        linear operator which calculates x = C_OO^{-1} b for any vector b</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="c1"># Preconditionning : use sparse matrix</span>
+    <span class="c1"># ======================================================================</span>
+    <span class="n">ind_mis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">==</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="c1">#.astype(int)</span>
+    <span class="n">ind_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">!=</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="c1">#.astype(int)</span>
+
+
+    <span class="c1"># Deterministic model for observed and missing data</span>
+    <span class="c1"># ======================================================================</span>
+    <span class="n">A_obs</span> <span class="o">=</span>  <span class="n">A</span><span class="p">[</span><span class="n">M</span><span class="o">==</span><span class="mi">1</span><span class="p">,:]</span>
+    <span class="n">A_mis</span> <span class="o">=</span>  <span class="n">A</span><span class="p">[</span><span class="n">M</span><span class="o">==</span><span class="mi">0</span><span class="p">,:]</span>
+    <span class="n">beta_est</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Preconditionner</span>
+    <span class="c1"># ======================================================================</span>
+    <span class="n">solve</span> <span class="o">=</span> <span class="n">computePrecond</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland2&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Residuals of observed data - model</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">]</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A_obs</span><span class="p">,</span><span class="n">beta_est</span><span class="p">)</span>
+
+    <span class="c1"># Conjugate gradients</span>
+    <span class="c1"># ======================================================================</span>
+    <span class="c1"># Solve the linear system C_oo x = eps</span>
+    <span class="c1">#u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps,Coo_func,Nit,np.std(eps),solve)</span>
+    <span class="n">N_o</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_o</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">PCGsolve</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the conditional expectation of missing data</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A_mis</span><span class="p">,</span><span class="n">beta</span><span class="p">)</span> <span class="o">+</span>  <span class="n">matVectProd</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">]</span>
+    <span class="n">z</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+
+
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span><span class="n">solve</span></div>
+
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="taperCovariance"><a class="viewcode-back" href="../../mecm.html#mecm.taperCovariance">[docs]</a><span class="k">def</span> <span class="nf">taperCovariance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland1&#39;</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function calculating a taper covariance that soothly goes to zero when h</span>
+<span class="sd">    goes to theta. This taper is to be mutiplied by the estimated covariance R</span>
+<span class="sd">    of the process, to discard correlations larger than theta.</span>
+
+<span class="sd">    Ref : Reinhard FURRER, Marc G. GENTON, and Douglas NYCHKA,</span>
+<span class="sd">    Covariance Tapering for Interpolation of Large Spatial Datasets,</span>
+<span class="sd">    Journal of Computational and Graphical Statistics, Volume 15, Number 3,</span>
+<span class="sd">    Pages 502–523,2006</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : numpy array of size N</span>
+<span class="sd">        lag</span>
+<span class="sd">    theta : scalar float</span>
+<span class="sd">        taper parameter</span>
+<span class="sd">    taper : string {&#39;Wendland1&#39;,&#39;Wendland2&#39;,&#39;Spherical&#39;}</span>
+<span class="sd">        name of the taper function</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    C_tap : numpy array</span>
+<span class="sd">        the taper covariance function values (vector of size N)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">h</span><span class="o">&lt;=</span><span class="n">theta</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;Wendland1&#39;</span> <span class="p">:</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+
+        <span class="n">C</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">4.</span><span class="o">*</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;Wendland2&#39;</span> <span class="p">:</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+
+        <span class="n">C</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span><span class="o">**</span><span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">6.</span><span class="o">*</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="n">theta</span> <span class="o">+</span> \
+        <span class="mi">35</span><span class="o">*</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">3.</span><span class="o">*</span><span class="n">theta</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;Spherical&#39;</span> <span class="p">:</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+
+        <span class="n">C</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span> <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;Hanning&#39;</span><span class="p">:</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">C</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hanning</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">theta</span><span class="p">)[</span><span class="n">theta</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">theta</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span>
+
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;Gaussian&#39;</span> <span class="p">:</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">theta</span><span class="o">/</span><span class="mf">5.</span>
+        <span class="n">C</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span> <span class="n">h</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;rectSmooth&#39;</span><span class="p">:</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+        <span class="c1">#tau = np.int(theta/3)</span>
+
+
+        <span class="n">C</span><span class="p">[</span><span class="n">h</span><span class="o">&lt;=</span><span class="n">theta</span><span class="o">-</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="n">jj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">h</span><span class="o">&gt;=</span><span class="n">theta</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">h</span><span class="o">&lt;=</span><span class="n">theta</span><span class="p">)</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">C</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">-</span><span class="n">theta</span><span class="o">+</span><span class="n">tau</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">taper</span> <span class="o">==</span> <span class="s1">&#39;modifiedWendland2&#39;</span><span class="p">:</span>
+
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+
+        <span class="n">C</span><span class="p">[</span><span class="n">h</span><span class="o">&lt;=</span><span class="n">theta</span><span class="o">-</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="n">jj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">h</span><span class="o">&gt;=</span><span class="n">theta</span><span class="o">-</span><span class="n">tau</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">h</span><span class="o">&lt;=</span><span class="n">theta</span><span class="p">)</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">C</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">-</span><span class="n">theta</span><span class="o">+</span><span class="n">tau</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span><span class="o">**</span><span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> \
+        <span class="mf">6.</span><span class="o">*</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">-</span><span class="n">theta</span><span class="o">+</span><span class="n">tau</span><span class="p">)</span><span class="o">/</span><span class="n">tau</span> <span class="o">+</span> <span class="mi">35</span><span class="o">*</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span><span class="o">-</span><span class="n">theta</span><span class="o">+</span><span class="n">tau</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">3.</span><span class="o">*</span><span class="n">tau</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+
+
+    <span class="k">return</span> <span class="n">C</span></div>
+
+
+<span class="c1"># ==============================================================================</span>
+<div class="viewcode-block" id="computePrecond"><a class="viewcode-back" href="../../mecm.html#mecm.computePrecond">[docs]</a><span class="k">def</span> <span class="nf">computePrecond</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">ptype</span> <span class="o">=</span> <span class="s1">&#39;sparse&#39;</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland2&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    For a given mask and a given PSD function, the function computes the linear</span>
+<span class="sd">    operator x = C_OO^{-1} b for any vector b, where C_OO is the covariance matrix</span>
+<span class="sd">    of the observed data (at points where M==1).</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    R : numpy array</span>
+<span class="sd">        input autocovariance functions at each lag (size N)</span>
+<span class="sd">    M : numpy array</span>
+<span class="sd">        mask vector</span>
+<span class="sd">    p : scalar integer</span>
+<span class="sd">        number of lags to calculate the tapered approximation of the</span>
+<span class="sd">        autocoariance function. This is needed to pre-conditionate the conjugate</span>
+<span class="sd">        gradients.</span>
+<span class="sd">    ptype : string {&#39;sparse&#39;,&#39;circulant&#39;}</span>
+<span class="sd">        specifies the type of preconditioner matrix (sparse approximation of the</span>
+<span class="sd">        covariance or circulant approximation of the covariance)</span>
+<span class="sd">    taper : string {&#39;Wendland1&#39;,&#39;Wendland2&#39;,&#39;Spherical&#39;}</span>
+<span class="sd">        name of the taper function. This argument is only used if ptype = &#39;sparse&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    solve : sparse.linalg.factorized instance</span>
+<span class="sd">        preconditionner operator, calculating P x for all vectors x</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+    <span class="c1"># ======================================================================</span>
+    <span class="n">ind_mis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">==</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="c1">#.astype(int)</span>
+    <span class="n">ind_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">M</span><span class="o">!=</span><span class="mi">0</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="c1">#.astype(int)</span>
+    <span class="c1"># Calculate the covariance matrix of the complete data</span>
+
+    <span class="k">if</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s1">&#39;sparse&#39;</span><span class="p">:</span>
+        <span class="c1"># Preconditionning : use sparse matrix</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">buildSparseCov2</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">form</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="n">taper</span><span class="p">)</span>
+        <span class="c1"># Calculate the covariance matrix of the observed data</span>
+        <span class="n">C_temp</span> <span class="o">=</span> <span class="n">C</span><span class="p">[:,</span><span class="n">ind_obs</span><span class="p">]</span>
+        <span class="c1">#C_OO = C_temp[ind_obs,:]</span>
+        <span class="c1">#del C_temp</span>
+        <span class="c1">#del C</span>
+        <span class="c1"># Preconditionner</span>
+        <span class="c1">#solve =  sparse.linalg.factorized(C_OO)</span>
+        <span class="n">solve</span> <span class="o">=</span>  <span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">factorized</span><span class="p">(</span><span class="n">C_temp</span><span class="p">[</span><span class="n">ind_obs</span><span class="p">,:])</span>
+
+    <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s1">&#39;circulant&#39;</span><span class="p">:</span>
+
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+        <span class="n">solve</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">ifft</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">N_fft</span><span class="p">)</span><span class="o">/</span><span class="n">S</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">solve</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Quentin Baghi.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0',
+            LANGUAGE:'python',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

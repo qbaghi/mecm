@@ -1,0 +1,16 @@
+LICENCE.txt
+MANIFEST.in
+README.rst
+setup.py
+mecm/__init__.py
+mecm/leastsquares.py
+mecm/localestimator.py
+mecm/matrixalgebra.py
+mecm/mecm.py
+mecm/noise.py
+mecm/peacecontestimator.py
+mecm/version.py
+mecm.egg-info/PKG-INFO
+mecm.egg-info/SOURCES.txt
+mecm.egg-info/dependency_links.txt
+mecm.egg-info/top_level.txt

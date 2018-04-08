@@ -1,0 +1,452 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="python" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="python" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mecm.noise &mdash; mecm 0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> mecm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mecm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mecm.noise</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mecm.noise</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Author: Quentin Baghi 2017</span>
+<span class="c1"># ==============================================================================</span>
+<span class="c1"># This code provides algorithms to generate realizations of colored stationary</span>
+<span class="c1"># processes</span>
+<span class="c1"># ==============================================================================</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">signal</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">pyfftw</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">pyfftw.interfaces.numpy_fft</span> <span class="k">import</span> <span class="n">fft</span><span class="p">,</span> <span class="n">ifft</span>
+<span class="n">pyfftw</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">jit</span>
+
+
+<div class="viewcode-block" id="symmetrize"><a class="viewcode-back" href="../../mecm.html#mecm.noise.symmetrize">[docs]</a><span class="k">def</span> <span class="nf">symmetrize</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">N_DSP</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function returning the full symmetrized noise DSP in UNIT/sqrt(Hz)</span>
+<span class="sd">    from DSP values ranging from fe/N_DSP to fe where :</span>
+<span class="sd">    fe is the sampling frequency</span>
+<span class="sd">    N_DSP is the data size (number of required DSP points)</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : 1D-array</span>
+<span class="sd">        Positive frequencies DSP values (vector of size N_fft)</span>
+<span class="sd">    N_DSP : scalar integer</span>
+<span class="sd">        Number of required DSP points</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DSP : numpy array</span>
+<span class="sd">        Noise DSP (N vector)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c1"># If N is even</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">N_DSP</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">:</span>
+
+
+        <span class="c1">#N is odd :</span>
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">N_DSP</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Frequencies</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N_DSP</span><span class="p">)</span>
+        <span class="c1"># Initialize the DSP</span>
+        <span class="n">DSP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_DSP</span><span class="p">)</span>
+
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="p">]</span>
+        <span class="c1"># For f=0 extrapolate the data</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">11</span><span class="p">],</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">],</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">poly</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Include the symmetric values for negative frequencies</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">N_DSP</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Extrapolate value for f = - fe/2 from the values f &lt;= fe/2 -fe/N</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">N_fft</span><span class="o">-</span><span class="mi">9</span><span class="p">:</span><span class="n">N_fft</span><span class="p">],</span><span class="n">values</span><span class="p">[</span><span class="n">N_fft</span><span class="o">-</span><span class="mi">9</span><span class="p">:</span><span class="n">N_fft</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">poly2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">poly2</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+
+    <span class="k">else</span> <span class="p">:</span>
+
+
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">((</span><span class="n">N_DSP</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+
+        <span class="c1"># Frequencies</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N_DSP</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the DSP</span>
+        <span class="n">DSP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_DSP</span><span class="p">)</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="p">]</span>
+        <span class="c1"># For f=0  extrapolate the data</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">11</span><span class="p">],</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">],</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">poly</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Include the symmetric values for negative frequencies</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">N_DSP</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">DSP</span></div>
+
+
+
+<div class="viewcode-block" id="symmetrize_shift"><a class="viewcode-back" href="../../mecm.html#mecm.noise.symmetrize_shift">[docs]</a><span class="k">def</span> <span class="nf">symmetrize_shift</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">fe</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function returning the full symmetrized noise DSP in UNIT/sqrt(Hz)</span>
+<span class="sd">    from DSP values ranging from fe/N to (N_fft+1)*fe/N where :</span>
+<span class="sd">    fe is the sampling frequency</span>
+<span class="sd">    N is the data size (number of required temporal observations)</span>
+<span class="sd">    N_fft is (N-1)/2 if N is odd and N/2-1 if N is even</span>
+
+<span class="sd">    This function differs from symmetrize function in that it &quot;shifts&quot; the real DSP</span>
+<span class="sd">    by -fe/N so that the zero frequency point actually corresponds to DSP(fe/N).</span>
+<span class="sd">    This is another way to handle the singularity at zero.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    DSPvalues : 1D-array</span>
+<span class="sd">        Positifve frequencies DSP values (vector of size N_fft)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DSP : numpy array</span>
+<span class="sd">        Noise DSP (N vector)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If N is even</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">N</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">:</span>
+
+
+        <span class="c1">#N is odd :</span>
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="n">N</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># Frequencies</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">fe</span>
+        <span class="c1"># Initialize the DSP</span>
+        <span class="n">DSP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Include the symmetric values for negative frequencies</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">2</span><span class="p">:</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Extrapolate value for f = - fe/2 from the value at fe/2</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+
+    <span class="k">else</span> <span class="p">:</span>
+
+
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+
+
+        <span class="c1"># Frequencies</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">fe</span>
+
+        <span class="c1"># Initialize the DSP</span>
+        <span class="n">DSP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Include the symmetric values for negative frequencies</span>
+        <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">DSP</span></div>
+
+
+
+<div class="viewcode-block" id="generateNoiseFromDSP"><a class="viewcode-back" href="../../mecm.html#mecm.noise.generateNoiseFromDSP">[docs]</a><span class="k">def</span> <span class="nf">generateNoiseFromDSP</span><span class="p">(</span><span class="n">DSP</span><span class="p">,</span><span class="n">fe</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function generating a colored noise from a vector containing the DSP.</span>
+<span class="sd">    The DSP contains Np points such that Np &gt; 2N and the output noise should</span>
+<span class="sd">    only contain N points in order to avoid boundary effects. However, the</span>
+<span class="sd">    output is a 2N vector containing all the generated data. The troncature</span>
+<span class="sd">    should be done afterwards.</span>
+
+<span class="sd">    References : Timmer &amp; König, &quot;On generating power law noise&quot;, 1995</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    DSP : array_like</span>
+<span class="sd">        vector of size N_DSP continaing the noise DSP calculated at frequencies</span>
+<span class="sd">        between -fe/N_DSP and fe/N_DSP where fe is the sampling frequency and N</span>
+<span class="sd">        is the size of the time series (it will be the size of the returned</span>
+<span class="sd">        temporal noise vector b)</span>
+<span class="sd">    N : scalar integer</span>
+<span class="sd">        Size of the output time series</span>
+<span class="sd">    fe : scalar float</span>
+<span class="sd">        sampling frequency</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        b : numpy array</span>
+<span class="sd">        temporal sample of the colored noise (size N)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Size of the DSP</span>
+    <span class="n">N_DSP</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">DSP</span><span class="p">)</span>
+    <span class="c1"># Initialize seed for generating random numbers</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">()</span>
+
+    <span class="c1"># If N is even</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">N_DSP</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">N_DSP</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># If N is odd</span>
+    <span class="k">else</span> <span class="p">:</span>
+
+        <span class="n">N_fft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">((</span><span class="n">N_DSP</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+
+    <span class="c1"># Real part of the Noise fft : it is a gaussian random variable</span>
+    <span class="n">Noise_TF_real</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="c1"># Imaginary part of the Noise fft :</span>
+    <span class="n">Noise_TF_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">DSP</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="c1">#*np.random.normal(loc=0.0, scale=1.0, size=N_fft+1)</span>
+    <span class="c1"># The Fourier transform must be real in f = 0</span>
+    <span class="n">Noise_TF_im</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">Noise_TF_real</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Noise_TF_real</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="c1"># Create the NoiseTF complex numbers for positive frequencies</span>
+    <span class="n">Noise_TF</span> <span class="o">=</span> <span class="n">Noise_TF_real</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">Noise_TF_im</span>
+
+
+
+    <span class="c1"># To get a real valued signal we must have NoiseTF(-f) = NoiseTF*</span>
+    <span class="k">if</span> <span class="n">N_DSP</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">:</span>
+
+        <span class="c1"># Initialize the total noise TF</span>
+        <span class="n">Noise_sym</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">part2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">Noise_TF</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">Noise_sym</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">part2</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># The TF at Nyquist frequency must be real in the case of an even number of data</span>
+        <span class="n">Noise_sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Add the symmetric part corresponding to negative frequencies</span>
+        <span class="n">Noise_TF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span> <span class="p">(</span><span class="n">Noise_TF</span><span class="p">,</span> <span class="n">Noise_sym</span><span class="p">)</span> <span class="p">)</span>
+
+
+
+    <span class="k">else</span> <span class="p">:</span>
+
+        <span class="n">Noise_sym</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">Noise_TF</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">Noise_TF</span><span class="p">)])</span>
+
+        <span class="n">Noise_TF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span> <span class="p">(</span><span class="n">Noise_TF</span><span class="p">,</span> <span class="n">Noise_sym</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+
+
+    <span class="n">pyfftw</span><span class="o">.</span><span class="n">interfaces</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+    <span class="c1"># Inverse Fourier transform to get the noise time series (and apply the right normalization)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">Noise_TF</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">N_DSP</span><span class="o">*</span><span class="n">fe</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span> <span class="c1"># One must multiply by fe (to get the right dimension) and divide by 2 because of symmetrization !</span>
+                                    <span class="c1"># otherwise you say that you have both an uncertainty on positive and negative frequencies values</span>
+                                    <span class="c1"># which is wrong  because we know that they are equal.</span>
+
+    <span class="c1"># Noise spectrum :</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">fe</span><span class="o">/</span><span class="mf">2.</span><span class="o">*</span><span class="n">DSP</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1">#return b[N_DSP/2:N_DSP/2+N]*np.sqrt(np.var(b)/np.var(b[N_DSP/2:N_DSP/2+N])),S</span>
+    <span class="k">return</span> <span class="n">b</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Noise_TF</span><span class="c1">#*np.sqrt(np.var(b)/np.var(b[0:N])),S</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Quentin Baghi.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0',
+            LANGUAGE:'python',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

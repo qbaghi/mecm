@@ -1,0 +1,24 @@
+================================================================================
+# MECM algorithm parameters
+================================================================================
+# N_it_max : scalar integer, number of iterations of the M-ECM algorithm
+10
+# eps : scalar float, tolerance criterium to stop the algorithm
+1e-5
+# p : scalar integer, number of lags to calculate the tapered covariance approximation
+5
+Nd : scalar integer number of Monte-Carlo draws to estimate the conditional expectation
+10
+N_est : scalar integer, number of frequency points where to estimate the noise PSD
+1000
+N_it_cg : scalar integer
+	maximum number of iterations for the conjugate gradient algorithm.
+tol_cg : scalar float
+	tolerance criterium to stop the PCG algorithm (default is 1e-7)
+verbose : boolean
+	if True, a message is printed at the end of each iteration, displaying
+	the value of the convergence criterion
+compute_cov : boolean
+	if True, the covariance of the estimator is computed
+PCGalgo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}
+	Type of preconditioned conjugate gradient (PCG) algorithm to use among

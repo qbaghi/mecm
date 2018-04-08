@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="python" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="python" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to mecm&#39;s documentation! &mdash; mecm 0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> mecm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to mecm's documentation!</a></li>
+<li><a class="reference internal" href="#what-this-package-does">What this package does</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#quick-start-guide">Quick start guide</a></li>
+<li><a class="reference internal" href="#mecm-module">MECM module</a><ul>
+<li><a class="reference internal" href="#maxlike-function">Maxlike function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">mecm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to mecm's documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-mecm-s-documentation">
+<h1>Welcome to mecm's documentation!<a class="headerlink" href="#welcome-to-mecm-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>MECM stands for Modified Expectation Conditional Maximization. It is an
+method to estimate model parameters through linear regression, from time
+series affected by stationary colored noise and missing data.
+System inversions are efficiently performed by using preconditioned conjugate
+gradients, where matrix-to vector products are efficiently computed using
+FFT algorithm and element-wise multiplications.</p>
+<p>This package provides an implementation of the MECM algorithm as described in
+the reference:</p>
+<p><a class="reference external" href="https://arxiv.org/abs/1608.08530">https://arxiv.org/abs/1608.08530</a></p>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="what-this-package-does">
+<h1>What this package does<a class="headerlink" href="#what-this-package-does" title="Permalink to this headline">¶</a></h1>
+<p>The regression problem that this package tackle is the following.
+Let's consider a data model that can be written on the form</p>
+<div class="math">
+\[y = A \beta + n\]</div>
+<p>where:</p>
+<blockquote>
+<div><ul class="simple">
+<li>y is the measured time series data (size N), evenly sampled.</li>
+<li>A is the design matrix (size N x K)</li>
+<li><span class="math">\(\beta\)</span> is the vector of parameters to estimate (size K)</li>
+<li>n is the noise vector, assumed to follow a Gaussian stationary distribution with a given smooth spectral density S(f)</li>
+</ul>
+</div></blockquote>
+<p>Now assume that only some entries of the vector y are observed. The indices of
+observed and missing data are provided by a binary mask vector M, whose entries
+are equal to 1 when data are observed, 0 otherwise.
+So in fact we observe only a vector y_obs such that</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">y_obs</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">M</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The mecm package implements a method to estimate <span class="math">\(\beta\)</span> and <span class="math">\(S(f)\)</span> given y_obs,
+A and M.</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>mecm can be installed by unzipping the source code in one directory, open up a terminal and using this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>You can also install it directly from the Python Package Index with this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">mecm</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="quick-start-guide">
+<span id="quick-start-label"></span><h1>Quick start guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<p>MECM can be basically used to perform any multilinear regression analysis where
+the distribution of the noise is assumed to be Gaussian and stationary in the
+wide sense, with a smooth power spectral density (PSD).</p>
+<p>Let us show how it works with an example.</p>
+<ol class="arabic simple">
+<li>Data generation</li>
+</ol>
+<p>To begin with, we generate some simple time series which contains noise and signal.
+To generate the noise, we start with a white, zero-mean Gaussian noise that
+we then filter to obtain a stationary colored noise:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Import mecm and other useful packages</span>
+<span class="kn">import</span> <span class="nn">mecm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="c1"># Choose size of data</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">14</span>
+<span class="c1"># Generate Gaussian white noise</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">N</span><span class="p">)</span>
+<span class="c1"># Apply filtering to turn it into colored noise</span>
+<span class="n">r</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">/</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;high&#39;</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">noise</span><span class="o">*</span><span class="n">r</span>
+</pre></div>
+</div>
+<p>Then we need a deterministic signal to add. We choose a sinusoid with some
+frequency f0 and amplitude a0:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">N</span><span class="p">)</span>
+<span class="n">f0</span> <span class="o">=</span> <span class="mf">1e-2</span>
+<span class="n">a0</span> <span class="o">=</span> <span class="mf">5e-3</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">a0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">f0</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We just have generated a time series that can be written in the form</p>
+<div class="math">
+\[y = A \beta + n\]</div>
+<p>Now assume that some data are missing, i.e. the time series is cut by random gaps.
+The pattern is represented by a mask vector M with entries equal to 1 when data
+is observed, and 0 otherwise:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="n">Ngaps</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">gapstarts</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">Ngaps</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">gaplength</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">gapends</span> <span class="o">=</span> <span class="p">(</span><span class="n">gapstarts</span><span class="o">+</span><span class="n">gaplength</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ngaps</span><span class="p">):</span> <span class="n">M</span><span class="p">[</span><span class="n">gapstarts</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span><span class="n">gapends</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span><span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Therefore, we do not observe y but its masked version, M*y.</p>
+<ol class="arabic simple" start="2">
+<li>Linear regression</li>
+</ol>
+<p>Now let's assume that we observed M*y and that we want to estimate the amplitude
+of the sine wave whose frequency and phase are known, along with the PSD of the
+noise residuals.
+The available data is</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">M</span><span class="o">*</span><span class="p">(</span><span class="n">s</span><span class="o">+</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We must specify the design matrix (i.e. the data model) by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">f0</span><span class="o">*</span><span class="n">t</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+<p>Then we can just run the mecm maximum likelihood estimator, by writing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a0_est</span><span class="p">,</span><span class="n">a0_cov</span><span class="p">,</span><span class="n">a0_vect</span><span class="p">,</span><span class="n">y_rec</span><span class="p">,</span><span class="n">I_condMean</span><span class="p">,</span><span class="n">PSD</span> <span class="o">=</span> <span class="n">mecm</span><span class="o">.</span><span class="n">maxlike</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result of this function is, in the order provided: the estimated amplitude,
+its estimated covariance, the vector containing the amplitude updates at each
+iteration of the algorithm, the estimated complete-data vector, the conditional
+expectation of the data periodogram (at Fourier frequencies), and an instance of
+the PSD_estimate class.</p>
+</div>
+<div class="section" id="mecm-module">
+<h1>MECM module<a class="headerlink" href="#mecm-module" title="Permalink to this headline">¶</a></h1>
+<p>The mecm module is the core method of the package. It allows one to perform
+efficient linear regression on time series with stationary noise and missing
+data.</p>
+<div class="section" id="maxlike-function">
+<h2>Maxlike function<a class="headerlink" href="#maxlike-function" title="Permalink to this headline">¶</a></h2>
+<p>The main function that you may use is the maximum likelihood algorithm provided
+by maxlike, which computes the maximum likelihood estimate of the regression
+parameter <span class="math">\(\beta\)</span>.</p>
+<p>This function can be used simply as in section <a class="reference internal" href="#quick-start-label"><span class="std std-ref">Quick start guide</span></a>.
+However, it can be useful to tune some additional parameters to increase
+accuracy of the results or the efficiency of the computation.</p>
+<p>See the full inputs and outputs of the function as well as more details on how
+to specify its parameters below:</p>
+<dl class="function">
+<dt id="mecm.maxlike">
+<code class="descclassname">mecm.</code><code class="descname">maxlike</code><span class="sig-paren">(</span><em>y</em>, <em>M</em>, <em>A</em>, <em>N_it_max=15</em>, <em>eps=0.0001</em>, <em>p=20</em>, <em>Nd=10</em>, <em>N_est=1000</em>, <em>Nit_cg=200</em>, <em>tol_cg=1e-05</em>, <em>compute_cov=True</em>, <em>verbose=True</em>, <em>PCGalgo='scipy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mecm/mecm.html#maxlike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mecm.maxlike" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function estimating the regression parameters for a problem of
+multivariate Gaussian maximum likelihood with missing data,
+using the M-ECM algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
+<dd><p class="first last">masked data vector</p>
+</dd>
+<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
+<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
+</dd>
+<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
+<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
+</dd>
+<dt><strong>N_it_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
+<dd><p class="first last">number of iterations of the M-ECM algorithm</p>
+</dd>
+<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
+<dd><p class="first last">tolerance criterium to stop the algorithm (default is 1e-8)</p>
+</dd>
+<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
+<dd><p class="first last">number of lags to calculate the tapered approximation of the
+autocoariance function. This is needed to pre-conditionate the conjugate
+gradients.</p>
+</dd>
+<dt><strong>Nd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
+<dd><p class="first last">number of Monte-Carlo draws to estimate the conditional expectation of
+the noise periodogram with respect to the observed data</p>
+</dd>
+<dt><strong>N_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
+<dd><p class="first last">number of frequency points where to estimate the noise power spectral
+density (on a logarithmic grid)</p>
+</dd>
+<dt><strong>N_it_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
+<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm.</p>
+</dd>
+<dt><strong>tol_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
+<dd><p class="first last">tolerance criterium to stop the PCG algorithm (default is 1e-7)</p>
+</dd>
+<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
+<dd><p class="first last">if True, a message is printed at the end of each iteration, displaying
+the value of the convergence criterion</p>
+</dd>
+<dt><strong>compute_cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
+<dd><p class="first last">if True, the covariance of the estimator is computed</p>
+</dd>
+<dt><strong>PCGalgo</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</span></dt>
+<dd><p class="first last">Type of preconditioned conjugate gradient (PCG) algorithm to use among</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>beta_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K)</span></dt>
+<dd><p class="first last">final value of the estimated parameter vector</p>
+</dd>
+<dt><strong>cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or array_like (size K x K)</span></dt>
+<dd><p class="first last">estimated covariance matrix of the parameter vector. If compute_cov is
+False, then cov is None</p>
+</dd>
+<dt><strong>beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N_iterations x K)</span></dt>
+<dd><p class="first last">vector storing the updates of the parameter vector at each iteration</p>
+</dd>
+<dt><strong>y_rec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
+<dd><p class="first last">reconstructed data vector, i.e. conditional expectation of the data
+given the available observations.</p>
+</dd>
+<dt><strong>I_condMean</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
+<dd><p class="first last">conditional expectation of the noise periodogram</p>
+</dd>
+<dt><strong>PSD</strong> <span class="classifier-delimiter">:</span> <span class="classifier">PSD_estimate class instance</span></dt>
+<dd><p class="first last">class containing all the information regarding the estimated noise PSD</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="ra68a49052bff-1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="17">
+<li>Baghi et al, &quot;Gaussian regression and power spectral density estimation with missing data: The MICROSCOPE space mission as a case study,&quot; Physical Review D, vol. 93, num. 12, 2016</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>Here we explain in more details the meaning and effects of the optional
+arguments of the maxlike function.</p>
+<p>The MECM algorithm iterates between two basic steps:</p>
+<blockquote>
+<div><p>1. expectation steps: estimation the missing data and their second
+orders moments) and</p>
+<p>2. maximization steps: estimation of the regression parameter beta and
+of the noise PSD function S(f).</p>
+</div></blockquote>
+<p>The number of iterations of the algorithm is driven by N_it_max, which is
+the maximum number of iterations, and eps, which is the tolerance criterium
+below which the algorithms stops, i.e. if</p>
+<div class="math">
+\[|| \beta_{i} - \beta_{i-1}|| / || \beta_{i-1} || &lt; \epsilon\]</div>
+<p>The expectation step 1 involves the estimation of the missing data vector, which
+can be written as</p>
+<div class="math">
+\[y_m = A_m \beta + C_{mo} C_{oo}^{-1} \left( y_o - A_o \beta \right)\]</div>
+<p>The storage and full computation of the covariance matrix <span class="math">\(C_{oo}\)</span> is not
+feasible on standard machines.
+Rather, we solve the system:</p>
+<div class="math">
+\[C_{oo} x = y_o\]</div>
+<p>by using a preconditioned conjugate gradient (PCG) algorithm, which iteratively
+decrease the norm of the residuals <span class="math">\(C_{oo}x - y_o\)</span>.
+The maximum number of iterations and convergence tolerence of the PCG algorithm
+are respectively given by the parameters N_it_cg and tol_cg.
+This convergence criterium is met when</p>
+<div class="math">
+\[||C_{oo} x - y_o || /|| y_o || &lt; \rm{tol}_{cg}\]</div>
+<p>However, for the convergence to be fast enough, and the problem to be well-posed,
+one needs to solve the following system instead:</p>
+<div class="math">
+\[P C_{oo} x = P y_o\]</div>
+<p>where <span class="math">\(P\)</span> is a matrix which looks like <span class="math">\(C_{oo}\)</span> but which is easier
+to compute.
+In the MECM algorithm, we choose <span class="math">\(P^{-1}\)</span> as being a sparse version of
+<span class="math">\(C_{oo}\)</span>. That is, the autocovariance function of the noise is approximated
+by a truncated version of the true noise autocovariance. The autocorrelation
+length of this approximate matrix is specified by the parameter p.
+<strong>The choice of p plays an important role in the algorithm: if p is large,
+the convergence will be more stable, and the number of iterations needed to
+reach convergence will we smaller, but the computational cost to perform a single iteration will be higher,
+and so will be the amount of memory needed to compute the matrix P</strong>, which scales as
+<span class="math">\(p^2 N\)</span> where <span class="math">\(N\)</span> is the size of the analyzed time series. Therefore,
+the parameter p must be carefully tuned if you deal with large data sets (i.e. <span class="math">\(N&gt;10^{6}\)</span>),
+in order to prevent memory overflow.</p>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Quentin Baghi.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0',
+            LANGUAGE:'python',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

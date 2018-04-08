@@ -1,0 +1,87 @@
+Metadata-Version: 1.0
+Name: mecm
+Version: 0.1.0
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: Quentin Baghi
+Author-email: UNKNOWN
+License: see LICENSE.txt
+Description-Content-Type: UNKNOWN
+Description: mecm
+        =================
+        
+        
+        This package provides an implementation of the modified expectation maximization
+        algorithm developed by Q. Baghi, for which a reference can be found in
+        https://arxiv.org/abs/1608.08530
+        
+        
+        
+        Short Description
+        -----------------
+        
+        The MECM package is a tool to perform gaussian linear regressions on time series affected
+        by colored stationary noise and missing data. It is based on an algorithm close to the
+        expectation-maximization, which is efficiently implemented by taking advantage of fast
+        Fourier transforms, fast matrix-to-vector multiplications, and sparse linear algebra.
+        
+        Let's consider a data model that can be written on the form:
+        
+        $y = A*beta + n$
+        
+        where:
+        
+          * y is the measured time series data (size N), evenly sampled.
+          * A is the design matrix (size N x K)
+          * beta is the vector of parameters to estimate (size K)
+          * n is the noise vector, assumed to follow a Gaussian stationary distribution
+          with a given smooth spectral density S(f)
+        
+        Now assume that only some entries of the vector y are observed.
+        
+        The main methods of the package are:
+        
+          * maxlike: quasi-maximum likelihood estimation with missing data for gaussian
+        stationary models of the form $y = A*beta + epsilon$
+        
+          * PSD_estimate: a class to perform power spectral density estimation with local
+        linear smoothers.
+        
+          * conditionalDraw: a function computing the conditional expectation of the
+        missing data conditionally on the observed data, assuming a Gaussian stationary
+        model.
+        
+        
+        Installation
+        --------------
+        
+        mecm can be installed by unzipping the source code in one directory and using this command: ::
+        
+            sudo python setup.py install
+        
+        You can also install it directly from the Python Package Index with this command: ::
+        
+            sudo pip mecm install
+        
+        
+        Licence
+        --------
+        
+        See file LICENCE.txt in this folder
+        
+        
+        Quick start guide
+        -----------------
+        
+        MECM can be basically used to perform any multilinear regression analysis where
+        the distribution of the noise is assumed to be Gaussian and stationary in the
+        wide sense.
+        
+        
+        
+        
+        Contribute
+        -----------
+        mecm is an open-source software. Everyone is welcome to contribute !
+        
+Platform: UNKNOWN
