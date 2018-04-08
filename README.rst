@@ -92,7 +92,9 @@ You can also install it directly from the Python Package Index with this command
 Licence
 -------
 
-See file LICENCE.txt in this folder
+See file:
+
+.. include:: ../LICENCE.txt
 
 
 Quick start guide
@@ -186,9 +188,16 @@ iteration of the algorithm, the estimated complete-data vector, the conditional
 expectation of the data periodogram (at Fourier frequencies), and an instance of
 the PSD_estimate class.
 
+Documentation
+-------------
+
 For a more detailed description of the outputs and information about how to tune
-the mecm algorithm, please have a look at the documentation.
+the mecm algorithm, please have a look at the documentation:
+
+.. include:: ../docs/build/html/index.html
 
 Contribute
 ----------
 mecm is an open-source software. Everyone is welcome to contribute !
+Please site the original paper in scientific contributions:
+https://arxiv.org/abs/1608.08530
