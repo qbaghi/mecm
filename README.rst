@@ -94,7 +94,7 @@ Licence
 
 See file:
 
-.. include:: ../LICENCE.txt
+.. include:: ../../LICENCE.txt
 
 
 Quick start guide
@@ -194,7 +194,7 @@ Documentation
 For a more detailed description of the outputs and information about how to tune
 the mecm algorithm, please have a look at the documentation:
 
-.. include:: ../docs/build/html/index.html
+.. include:: ../../docs/build/html/index.html
 
 Contribute
 ----------
