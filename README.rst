@@ -194,7 +194,7 @@ Documentation
 For a more detailed description of the outputs and information about how to tune
 the mecm algorithm, please have a look at the documentation:
 
-.. include:: ../../docs/build/html/index.html
+.. include:: ../mecm/LICENCE.txt 
 
 Contribute
 ----------
