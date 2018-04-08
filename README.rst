@@ -92,9 +92,8 @@ You can also install it directly from the Python Package Index with this command
 Licence
 -------
 
-See
+See `licence file <https://github.com/Porlopopof/mecm/blob/master/LICENCE.txt>`_
 
-[licence](../blob/master/LICENCE.txt)
 
 Quick start guide
 -----------------
@@ -191,9 +190,7 @@ Documentation
 -------------
 
 For a more detailed description of the outputs and information about how to tune
-the mecm algorithm, please have a look at the
-
-[documentation](../blob/master/docs/build/html/index.html)
+the mecm algorithm, please have a look at the `documentation <https://github.com/Porlopopof/mecm/blob/master/docs/build/html/index.html>`_
 
 
 Contribute
