@@ -13,7 +13,7 @@ import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
 from numba import jit
 # For parallel loops
-from numba import njit, prange
+#from numba import njit, prange
 pyfftw.interfaces.cache.enable()
 
 
