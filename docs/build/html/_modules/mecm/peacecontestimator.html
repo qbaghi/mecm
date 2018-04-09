@@ -180,8 +180,8 @@
         <span class="k">if</span> <span class="n">i_found</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">i_out</span> <span class="p">:</span>
             <span class="n">i_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">i_out</span><span class="p">,</span> <span class="n">i_found</span> <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">i_out</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">i_out</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+</div>
 
 
 <div class="viewcode-block" id="psdfunction"><a class="viewcode-back" href="../../mecm.html#mecm.peacecontestimator.psdfunction">[docs]</a><span class="k">def</span> <span class="nf">psdfunction</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">):</span>
@@ -222,8 +222,8 @@
 
         <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">fk</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logS</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logS</span><span class="p">)</span>
+</div>
 
 <div class="viewcode-block" id="dlogSda"><a class="viewcode-back" href="../../mecm.html#mecm.peacecontestimator.dlogSda">[docs]</a><span class="k">def</span> <span class="nf">dlogSda</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -259,8 +259,8 @@
         <span class="n">k2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">fq</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">f</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">f</span> <span class="o">&lt;</span> <span class="n">fq</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dlogSda</span><span class="p">[</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">fq</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">f</span><span class="p">[</span><span class="n">k1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">fq</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">fq</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">dlogSda</span></div>
-
+    <span class="k">return</span> <span class="n">dlogSda</span>
+</div>
 
 <div class="viewcode-block" id="jac"><a class="viewcode-back" href="../../mecm.html#mecm.peacecontestimator.jac">[docs]</a><span class="k">def</span> <span class="nf">jac</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">z_fft</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -277,8 +277,8 @@
 
         <span class="n">jacob</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">dlogSda</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_fft</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">psdfunction</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">jacob</span></div>
-
+    <span class="k">return</span> <span class="n">jacob</span>
+</div>
 
 
 
@@ -319,8 +319,8 @@
 
     <span class="k">if</span> <span class="n">ik</span><span class="o">!=</span><span class="p">():</span>
         <span class="n">inds</span> <span class="o">=</span> <span class="n">ik</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">Hmj</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">dlogSda</span><span class="p">[</span><span class="n">m</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">[</span><span class="n">inds</span><span class="p">]]</span><span class="o">*</span><span class="n">dlogSda</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">[</span><span class="n">inds</span><span class="p">]]</span></div>
-</pre></div>
+        <span class="n">Hmj</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">dlogSda</span><span class="p">[</span><span class="n">m</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">[</span><span class="n">inds</span><span class="p">]]</span><span class="o">*</span><span class="n">dlogSda</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">fq</span><span class="p">,</span><span class="n">f</span><span class="p">[</span><span class="n">inds</span><span class="p">]]</span>
+</pre></div></div>
 
            </div>
            

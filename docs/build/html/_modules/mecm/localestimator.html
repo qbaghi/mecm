@@ -177,8 +177,8 @@
 <span class="sd">        the lowest integer q such 2^q is greater or equal than the input number</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></div>
-
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+</div>
 
 <div class="viewcode-block" id="gaussianKernel"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.gaussianKernel">[docs]</a><span class="k">def</span> <span class="nf">gaussianKernel</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -194,8 +194,8 @@
 <span class="sd">    ker : array_like (size N)</span>
 <span class="sd">        value of the kernel function at y</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+</div>
 
 <div class="viewcode-block" id="epanechnikovKernel"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.epanechnikovKernel">[docs]</a><span class="k">def</span> <span class="nf">epanechnikovKernel</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -214,8 +214,8 @@
     <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
     <span class="n">out</span><span class="p">[</span><span class="n">y</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.</span><span class="o">/</span><span class="mf">4.</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="n">y</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">]</span> <span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">out</span></div>
-
+    <span class="k">return</span> <span class="n">out</span>
+</div>
 
 <div class="viewcode-block" id="kernel"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.kernel">[docs]</a><span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">kind</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -239,8 +239,8 @@
     <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;epa&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">epanechnikovKernel</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;gauss&#39;</span> <span class="p">:</span>
-        <span class="k">return</span> <span class="n">gaussianKernel</span><span class="p">(</span><span class="n">y</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="n">gaussianKernel</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <span class="c1"># The basic linear smoother</span>
@@ -356,8 +356,8 @@
             <span class="n">sigma2_0</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">res2_sum</span><span class="o">/</span><span class="n">trace</span>
 
 
-    <span class="k">return</span> <span class="n">m_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span></div>
-
+    <span class="k">return</span> <span class="n">m_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span>
+</div>
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="localLinearEstimatorFromY"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.localLinearEstimatorFromY">[docs]</a><span class="k">def</span> <span class="nf">localLinearEstimatorFromY</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">f0</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="s1">&#39;epa&#39;</span><span class="p">,</span><span class="n">variance</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -429,8 +429,8 @@
     <span class="n">variance</span><span class="o">=</span><span class="n">variance</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="n">ST_given</span><span class="p">)</span>
 
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">m_est</span><span class="p">),</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">m_est</span><span class="p">),</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="localLinearEstimatorFromI"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.localLinearEstimatorFromI">[docs]</a><span class="k">def</span> <span class="nf">localLinearEstimatorFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="s1">&#39;epa&#39;</span><span class="p">,</span><span class="n">variance</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -487,8 +487,8 @@
     <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span> <span class="o">=</span> <span class="n">localLinearEstimatorFromY</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="n">ker</span><span class="p">,</span>
     <span class="n">variance</span> <span class="o">=</span> <span class="n">variance</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="n">ST_given</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span></div>
-
+    <span class="k">return</span> <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">ST</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="localLinearEstimator"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.localLinearEstimator">[docs]</a><span class="k">def</span> <span class="nf">localLinearEstimator</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">wind</span> <span class="o">=</span> <span class="s1">&#39;hanning&#39;</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="s1">&#39;epa&#39;</span><span class="p">,</span><span class="n">variance</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -556,8 +556,8 @@
 
     <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">localLinearEstimatorFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="n">ker</span><span class="p">,</span><span class="n">variance</span> <span class="o">=</span> <span class="n">variance</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="n">ST_given</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">I</span></div>
-
+    <span class="k">return</span> <span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">sigma2_0</span><span class="p">,</span><span class="n">I</span>
+</div>
 
 
 <span class="c1"># ==============================================================================</span>
@@ -623,8 +623,8 @@
             <span class="n">b_est</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">b_est</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span> <span class="n">ET</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">L0</span> <span class="o">-</span> <span class="n">ET</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">L1</span> <span class="p">)</span><span class="o">/</span><span class="n">denom</span>
 
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">a_est</span><span class="p">),</span><span class="n">b_est</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">a_est</span><span class="p">),</span><span class="n">b_est</span>
+</div>
 
 
 <span class="c1"># ==============================================================================</span>
@@ -739,8 +739,8 @@
 
         <span class="k">if</span> <span class="n">periodogram</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="n">I</span></div>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="n">I</span>
+</div>
 <div class="viewcode-block" id="PSD_estimate.estimateFromI"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.estimateFromI">[docs]</a>    <span class="k">def</span> <span class="nf">estimateFromI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">I</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        method computing the PSD estimate from the values of the input</span>
@@ -765,8 +765,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span><span class="p">,</span><span class="n">V_est</span><span class="p">,</span><span class="n">sigma2_0_est</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="n">localLinearEstimatorFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ST</span><span class="p">)</span>
         <span class="c1"># Calcualte the interpolation function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">PSD_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S_est</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PSD_variance_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">],</span><span class="n">V_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">6.</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">PSD_variance_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">],</span><span class="n">V_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">6.</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="PSD_estimate.MLestimateFromI"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.MLestimateFromI">[docs]</a>    <span class="k">def</span> <span class="nf">MLestimateFromI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">I</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        method computing the PSD estimate from the input periodogram I at</span>
@@ -787,8 +787,8 @@
         <span class="c1"># Estimation of the PSD function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S_est</span><span class="p">,</span><span class="n">b_est</span> <span class="o">=</span> <span class="n">localMLEstimatorFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="n">Niter</span><span class="p">,</span><span class="n">ST_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ST</span><span class="p">)</span>
         <span class="c1"># Calcualte the interpolation function</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PSD_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S_est</span><span class="p">))</span></div>
-        <span class="c1">#self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est&gt;0],V_est[self.f_est&gt;0]*np.pi**2/6.)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PSD_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S_est</span><span class="p">))</span>
+        <span class="c1">#self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est&gt;0],V_est[self.f_est&gt;0]*np.pi**2/6.)</span></div>
 
 <div class="viewcode-block" id="PSD_estimate.MLestimate"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.MLestimate">[docs]</a>    <span class="k">def</span> <span class="nf">MLestimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -811,8 +811,8 @@
         <span class="c1"># Compute the periodogram</span>
         <span class="n">I</span> <span class="o">=</span> <span class="n">periodogram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">wind</span> <span class="o">=</span> <span class="n">w</span><span class="p">)</span>
         <span class="c1"># Compute local maximum likelihood estimator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MLestimateFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="n">Niter</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">MLestimateFromI</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">Niter</span> <span class="o">=</span> <span class="n">Niter</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="PSD_estimate.conditionalEstimate"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.conditionalEstimate">[docs]</a>    <span class="k">def</span> <span class="nf">conditionalEstimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">condDraws</span><span class="p">,</span><span class="n">wind</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">):</span>
 
         <span class="p">(</span><span class="n">Nd</span><span class="p">,</span><span class="n">N</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">condDraws</span><span class="p">)</span>
@@ -838,8 +838,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">PSD_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">S_est_mean</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">PSD_variance_function</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">],</span><span class="n">V_est</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_est</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">6.</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">S_est</span> <span class="o">=</span> <span class="n">S_est_mean</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">S_est</span> <span class="o">=</span> <span class="n">S_est_mean</span>
+</div>
 
 
 <div class="viewcode-block" id="PSD_estimate.calculate"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arg</span><span class="p">):</span>
@@ -883,8 +883,8 @@
         <span class="c1"># Take the exponential value</span>
         <span class="n">S_est_N_sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">m_est_interp_N</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 
-        <span class="k">return</span> <span class="n">S_est_N_sym</span></div>
-
+        <span class="k">return</span> <span class="n">S_est_N_sym</span>
+</div>
 <div class="viewcode-block" id="PSD_estimate.calculateVariance"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.calculateVariance">[docs]</a>    <span class="k">def</span> <span class="nf">calculateVariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        method calculating the value of the PSD function at either a given</span>
@@ -922,8 +922,8 @@
 
         <span class="n">variance_N_sym</span> <span class="o">=</span> <span class="n">symmetrize</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">variance_N</span><span class="p">),</span><span class="n">N</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">variance_N_sym</span></div>
-
+        <span class="k">return</span> <span class="n">variance_N_sym</span>
+</div>
 <div class="viewcode-block" id="PSD_estimate.confidenceInterval"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.confidenceInterval">[docs]</a>    <span class="k">def</span> <span class="nf">confidenceInterval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">S_est</span><span class="p">,</span><span class="n">variance</span><span class="p">,</span><span class="n">alpha</span><span class="p">):</span>
 
         <span class="n">z</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">alpha</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
@@ -931,8 +931,8 @@
         <span class="n">ci_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">S_est</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">variance</span> <span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
         <span class="n">ci_up</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">S_est</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">variance</span> <span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ci_low</span><span class="p">,</span><span class="n">ci_up</span></div>
-
+        <span class="k">return</span> <span class="n">ci_low</span><span class="p">,</span><span class="n">ci_up</span>
+</div>
 
 <div class="viewcode-block" id="PSD_estimate.calculateST"><a class="viewcode-back" href="../../mecm.html#mecm.localestimator.PSD_estimate.calculateST">[docs]</a>    <span class="k">def</span> <span class="nf">calculateST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">ker</span> <span class="o">=</span> <span class="s1">&#39;epa&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1003,8 +1003,8 @@
             <span class="c1"># Estimate of the variance factor V[j,:] = (1./denom**2) * ( ST[:,2]**2 * ST_star[:,0] + ST[:,1]**2 * ST_star[:,2] - 2.*ST[:,2]*ST[:,1]*ST_star[:,1] )</span>
             <span class="n">V</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ST_star</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">ST</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">2.</span><span class="o">*</span><span class="n">ST</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">ST</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">ST_star</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ST</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">ST_star</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">denom</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 
-        <span class="k">return</span> <span class="n">ST</span><span class="p">,</span><span class="n">V</span></div></div>
-</pre></div>
+        <span class="k">return</span> <span class="n">ST</span><span class="p">,</span><span class="n">V</span>
+</pre></div></div></div>
 
            </div>
            

@@ -213,8 +213,8 @@
     <span class="n">Y_TF</span> <span class="o">=</span> <span class="n">fft</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="n">N_fft</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
 
     <span class="c1"># Calculate</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">ZI</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">ApS</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span><span class="n">Y_TF</span><span class="p">)</span> <span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">ZI</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">ApS</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span><span class="n">Y_TF</span><span class="p">)</span> <span class="p">)</span>
+</div>
 
 
 <span class="c1">###################################################################################################################################################</span>
@@ -271,8 +271,8 @@
     <span class="c1">## The estimator is equal to (A*P*PA)^-1 A*P*PY</span>
     <span class="c1">#X = np.dot( NI , np.dot( np.transpose(Ap).conj() , P * Y ) )</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">LA</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">Ap</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Ap</span> <span class="p">)</span> <span class="p">)</span> <span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">Ap</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span> <span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">LA</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">Ap</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Ap</span> <span class="p">)</span> <span class="p">)</span> <span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">Ap</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span> <span class="p">)</span>
+</div>
 
 
 <span class="c1">###################################################################################################################################################</span>
@@ -309,8 +309,8 @@
 
     <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">NI</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">Ap</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="p">,</span> <span class="n">Yp</span> <span class="p">)</span> <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">X</span></div>
-</pre></div>
+    <span class="k">return</span> <span class="n">X</span>
+</pre></div></div>
 
            </div>
            

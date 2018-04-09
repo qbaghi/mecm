@@ -169,9 +169,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="mecm.tests.html">mecm.tests package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="mecm.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mecm.tests.html#module-mecm.tests.test_mecm">mecm.tests.test_mecm module</a><ul class="simple">
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="mecm.tests.html#mecm-tests-test-mecm-module">mecm.tests.test_mecm module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mecm.tests.html#module-mecm.tests.working_example">mecm.tests.working_example module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mecm.tests.html#module-mecm.tests">Module contents</a></li>
 </ul>
@@ -194,32 +192,21 @@ function R and size N x N.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input autocovariance functions at each lag (size N)</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
-autocoariance function.</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the complete data vector</p>
-</dd>
-<dt><strong>form</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string (or None), optional</span></dt>
-<dd><p class="first last">storage format of the sparse matrix (default is None)</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd><p class="first last">type of taper function to smoothly decrease the tapered covariance
-function down to zero.</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>R</strong> (<em>numpy array</em>) -- input autocovariance functions at each lag (size N)</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
+autocoariance function.</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- Size of the complete data vector</li>
+<li><strong>form</strong> (<em>character string (or None), optional</em>) -- storage format of the sparse matrix (default is None)</li>
+<li><strong>taper</strong> (<em>string</em>) -- type of taper function to smoothly decrease the tapered covariance
+function down to zero.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>C_tap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse matrix</span></dt>
-<dd><p class="first last">Tappered covariance matrix (size N x N) with p non-zero diagonals.</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>C_tap</strong> -- Tappered covariance matrix (size N x N) with p non-zero diagonals.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scipy.sparse matrix</p>
 </td>
 </tr>
 </tbody>
@@ -236,33 +223,22 @@ of the observed data (at points where M==1).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input autocovariance functions at each lag (size N)</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">mask vector</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>R</strong> (<em>numpy array</em>) -- input autocovariance functions at each lag (size N)</li>
+<li><strong>M</strong> (<em>numpy array</em>) -- mask vector</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>ptype</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'sparse','circulant'}</span></dt>
-<dd><p class="first last">specifies the type of preconditioner matrix (sparse approximation of the
-covariance or circulant approximation of the covariance)</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'Wendland1','Wendland2','Spherical'}</span></dt>
-<dd><p class="first last">name of the taper function. This argument is only used if ptype = 'sparse'</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>ptype</strong> (<em>string {'sparse','circulant'}</em>) -- specifies the type of preconditioner matrix (sparse approximation of the
+covariance or circulant approximation of the covariance)</li>
+<li><strong>taper</strong> (<em>string {'Wendland1','Wendland2','Spherical'}</em>) -- name of the taper function. This argument is only used if ptype = 'sparse'</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">preconditionner operator, calculating P x for all vectors x</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>solve</strong> -- preconditionner operator, calculating P x for all vectors x</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">sparse.linalg.factorized instance</p>
 </td>
 </tr>
 </tbody>
@@ -278,55 +254,32 @@ conditionnaly on the observed data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Np</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the initial random vector which is drawn. The initial vector
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Np</strong> (<em>scalar integer</em>) -- Size of the initial random vector which is drawn. The initial vector
 follows a stationary distribution whose covariance matrix is circulant.
 It is then truncated to N_final to obtain the desired distribution whose
-covariance matrix is Toeplitz.</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Maximum number of conjugate gradient iterations.</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>Coo_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
-<dd><p class="first last">Linear operator that calculates the matrix-to-vector product Coo x for
-any vector x of size No (number of observed data points)</p>
-</dd>
-<dt><strong>solver</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>z_o</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of observed residuals</p>
-</dd>
-<dt><strong>mu_m_given_o</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size Nm)</span></dt>
-<dd><p class="first last">vector of conditional expectation of the missing data given the observed
-data</p>
-</dd>
-<dt><strong>ind_obs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of chronological indices of the observed data points in the
-complete data vector</p>
-</dd>
-<dt><strong>ind_mis</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of chronological indices of the missing data points in the
-complete data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">Stoping criteria for the conjugate gradient algorithm, optional</p>
-</dd>
-</dl>
+covariance matrix is Toeplitz.</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- Maximum number of conjugate gradient iterations.</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>Coo_func</strong> (<em>function</em>) -- Linear operator that calculates the matrix-to-vector product Coo x for
+any vector x of size No (number of observed data points)</li>
+<li><strong>solver</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>z_o</strong> (<em>array_like (size No)</em>) -- vector of observed residuals</li>
+<li><strong>mu_m_given_o</strong> (<em>array_like (size Nm)</em>) -- vector of conditional expectation of the missing data given the observed
+data</li>
+<li><strong>ind_obs</strong> (<em>array_like (size No)</em>) -- vector of chronological indices of the observed data points in the
+complete data vector</li>
+<li><strong>ind_mis</strong> (<em>array_like (size No)</em>) -- vector of chronological indices of the missing data points in the
+complete data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- Stoping criteria for the conjugate gradient algorithm, optional</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">realization of the vector of conditional noise given the observed data</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>eps</strong> -- realization of the vector of conditional noise given the observed data</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array (size N)</p>
 </td>
 </tr>
 </tbody>
@@ -342,36 +295,21 @@ conditionnaly on the observed data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">input vector of residuals (difference between data and model)</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Maximum number of conjugate gradient iterations.</p>
-</dd>
-<dt><strong>seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string, optional</span></dt>
-<dd><p class="first last">Regenerate the seed with system time (if None) or chosen integer.</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">Stoping criteria for the conjugate gradient algorithm, optional</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eps</strong> (<em>numpy array (size N)</em>) -- input vector of residuals (difference between data and model)</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- Maximum number of conjugate gradient iterations.</li>
+<li><strong>seed</strong> (<em>character string, optional</em>) -- Regenerate the seed with system time (if None) or chosen integer.</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- Stoping criteria for the conjugate gradient algorithm, optional</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>condDraws</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">Matrix whose rows are realization of the conditional noise vector</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>condDraws</strong> -- Matrix whose rows are realization of the conditional noise vector</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array (size Nd x N)</p>
 </td>
 </tr>
 </tbody>
@@ -389,47 +327,26 @@ See &quot;imputation&quot; function for a more general formulation</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">Input signal array</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K)</span></dt>
-<dd><p class="first last">regression parameter vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P)</span></dt>
-<dd><p class="first last">spectrum array: value of the unilateral PSD times fs</p>
-</dd>
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P)</span></dt>
-<dd><p class="first last">tappered autocovariance array: value of the autocovariance at all lags</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>s</strong> (<em>array_like (size N)</em>) -- Input signal array</li>
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>beta</strong> (<em>array_like (size K)</em>) -- regression parameter vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P)</em>) -- spectrum array: value of the unilateral PSD times fs</li>
+<li><strong>R</strong> (<em>numpy array (size P)</em>) -- tappered autocovariance array: value of the autocovariance at all lags</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- maximum number of iterations for the conjugate gradient algorithm</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- tolerance criterium to stop the PCG algorithm</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or ndarray</span></dt>
-<dd><p class="first last">conditional expectation of the data vector</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>z</strong> (<em>float or ndarray</em>) -- conditional expectation of the data vector</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -446,82 +363,45 @@ using the M-ECM algorithm.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">masked data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>N_it_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of iterations of the M-ECM algorithm</p>
-</dd>
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the algorithm (default is 1e-8)</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>numpy array (size N)</em>) -- masked data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>N_it_max</strong> (<em>scalar integer</em>) -- number of iterations of the M-ECM algorithm</li>
+<li><strong>eps</strong> (<em>scalar float</em>) -- tolerance criterium to stop the algorithm (default is 1e-8)</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>Nd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of Monte-Carlo draws to estimate the conditional expectation of
-the noise periodogram with respect to the observed data</p>
-</dd>
-<dt><strong>N_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of frequency points where to estimate the noise power spectral
-density (on a logarithmic grid)</p>
-</dd>
-<dt><strong>N_it_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm.</p>
-</dd>
-<dt><strong>tol_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm (default is 1e-7)</p>
-</dd>
-<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, a message is printed at the end of each iteration, displaying
-the value of the convergence criterion</p>
-</dd>
-<dt><strong>compute_cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, the covariance of the estimator is computed</p>
-</dd>
-<dt><strong>PCGalgo</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</span></dt>
-<dd><p class="first last">Type of preconditioned conjugate gradient (PCG) algorithm to use among</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>Nd</strong> (<em>scalar integer</em>) -- number of Monte-Carlo draws to estimate the conditional expectation of
+the noise periodogram with respect to the observed data</li>
+<li><strong>N_est</strong> (<em>scalar integer</em>) -- number of frequency points where to estimate the noise power spectral
+density (on a logarithmic grid)</li>
+<li><strong>N_it_cg</strong> (<em>scalar integer</em>) -- maximum number of iterations for the conjugate gradient algorithm.</li>
+<li><strong>tol_cg</strong> (<em>scalar float</em>) -- tolerance criterium to stop the PCG algorithm (default is 1e-7)</li>
+<li><strong>verbose</strong> (<em>boolean</em>) -- if True, a message is printed at the end of each iteration, displaying
+the value of the convergence criterion</li>
+<li><strong>compute_cov</strong> (<em>boolean</em>) -- if True, the covariance of the estimator is computed</li>
+<li><strong>PCGalgo</strong> (<em>string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</em>) -- Type of preconditioned conjugate gradient (PCG) algorithm to use among</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>beta_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K)</span></dt>
-<dd><p class="first last">final value of the estimated parameter vector</p>
-</dd>
-<dt><strong>cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or array_like (size K x K)</span></dt>
-<dd><p class="first last">estimated covariance matrix of the parameter vector. If compute_cov is
-False, then cov is None</p>
-</dd>
-<dt><strong>beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N_iterations x K)</span></dt>
-<dd><p class="first last">vector storing the updates of the parameter vector at each iteration</p>
-</dd>
-<dt><strong>y_rec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">reconstructed data vector, i.e. conditional expectation of the data
-given the available observations.</p>
-</dd>
-<dt><strong>I_condMean</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">conditional expectation of the noise periodogram</p>
-</dd>
-<dt><strong>PSD</strong> <span class="classifier-delimiter">:</span> <span class="classifier">PSD_estimate class instance</span></dt>
-<dd><p class="first last">class containing all the information regarding the estimated noise PSD</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>beta_new</strong> (<em>array_like (size K)</em>) -- final value of the estimated parameter vector</li>
+<li><strong>cov</strong> (<em>None or array_like (size K x K)</em>) -- estimated covariance matrix of the parameter vector. If compute_cov is
+False, then cov is None</li>
+<li><strong>beta</strong> (<em>array_like (size N_iterations x K)</em>) -- vector storing the updates of the parameter vector at each iteration</li>
+<li><strong>y_rec</strong> (<em>array_like (size N)</em>) -- reconstructed data vector, i.e. conditional expectation of the data
+given the available observations.</li>
+<li><strong>I_condMean</strong> (<em>array_like (size N)</em>) -- conditional expectation of the noise periodogram</li>
+<li><strong>PSD</strong> (<em>PSD_estimate class instance</em>) -- class containing all the information regarding the estimated noise PSD</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<table class="docutils citation" frame="void" id="re4d4b2cf341e-1" rules="none">
+<table class="docutils footnote" frame="void" id="id1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label">[1]</td><td><ol class="first last upperalpha simple" start="17">
@@ -530,6 +410,7 @@ given the available observations.</p>
 </td></tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 </dd></dl>
 
 <dl class="function">
@@ -541,38 +422,23 @@ multivariate Gaussian maximum likelihood with missing data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer, optional</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm.</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm (default is 1e-7)</p>
-</dd>
-<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional (default is 1e-15)</span></dt>
-<dd><p class="first last">Cutoff for small singular values when computing the inverse matrix.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>Nit</strong> (<em>scalar integer, optional</em>) -- maximum number of iterations for the conjugate gradient algorithm.</li>
+<li><strong>tol</strong> (<em>scalar float, optional</em>) -- tolerance criterium to stop the PCG algorithm (default is 1e-7)</li>
+<li><strong>r</strong> (<em>scalar float, optional (default is 1e-15)</em>) -- Cutoff for small singular values when computing the inverse matrix.
 Singular values smaller (in modulus) than rcond * largest_singular_value
-(in modulus) are set to zero.</p>
-</dd>
-</dl>
+(in modulus) are set to zero.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K x K)</span></dt>
-<dd><p class="first last">estimated covariance matrix of the parameter vector</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cov</strong> -- estimated covariance matrix of the parameter vector</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like (size K x K)</p>
 </td>
 </tr>
 </tbody>
@@ -588,22 +454,14 @@ of Fourier frequencies nfft (possible zero-padding) and apodization window.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>x_mat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">data for which the periodogram must be computed. Can be a one-dimentional
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_mat</strong> (<em>numpy array (size Nd x N)</em>) -- data for which the periodogram must be computed. Can be a one-dimentional
 vector or a matrix containing a time series in each row. The function
 computes as many periodograms as there are rows in x_mat, and returns
-a matrix of same size as x_mat.</p>
-</dd>
-</dl>
-</td>
+a matrix of same size as x_mat.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>Per</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">matrix (or vector) of periodogram</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>Per</strong> -- matrix (or vector) of periodogram</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy array (size Nd x N)</td>
 </tr>
 </tbody>
 </table>
@@ -623,24 +481,17 @@ Pages 502–523,2006</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">lag</p>
-</dd>
-<dt><strong>theta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">taper parameter</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'Wendland1','Wendland2','Spherical'}</span></dt>
-<dd><p class="first last">name of the taper function</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>h</strong> (<em>numpy array of size N</em>) -- lag</li>
+<li><strong>theta</strong> (<em>scalar float</em>) -- taper parameter</li>
+<li><strong>taper</strong> (<em>string {'Wendland1','Wendland2','Spherical'}</em>) -- name of the taper function</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>C_tap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">the taper covariance function values (vector of size N)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>C_tap</strong> -- the taper covariance function values (vector of size N)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -661,24 +512,17 @@ frequentiel&quot;, 2013.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array_like</span></dt>
-<dd><p class="first last">observation vector (size N)</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D array_like</span></dt>
-<dd><p class="first last">design matrix (size N x p)</p>
-</dd>
-<dt><strong>P</strong> <span class="classifier-delimiter">:</span> <span class="classifier">DD array_like</span></dt>
-<dd><p class="first last">Ponderation vector in the time domain (size N x N)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Y</strong> (<em>1D array_like</em>) -- observation vector (size N)</li>
+<li><strong>A</strong> (<em>2D array_like</em>) -- design matrix (size N x p)</li>
+<li><strong>P</strong> (<em>DD array_like</em>) -- Ponderation vector in the time domain (size N x N)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated set of parameters (vector of size p)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>X</strong> -- estimated set of parameters (vector of size p)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -696,24 +540,17 @@ frequentiel&quot;, 2013.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array_like</span></dt>
-<dd><p class="first last">observation vector (size N)</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D array_like</span></dt>
-<dd><p class="first last">design matrix (size N x p)</p>
-</dd>
-<dt><strong>P</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array_like</span></dt>
-<dd><p class="first last">Ponderation vector in the time domain (size N)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Y</strong> (<em>1D array_like</em>) -- observation vector (size N)</li>
+<li><strong>A</strong> (<em>2D array_like</em>) -- design matrix (size N x p)</li>
+<li><strong>P</strong> (<em>1D array_like</em>) -- Ponderation vector in the time domain (size N)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated set of parameters (vector of size p)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>X</strong> -- estimated set of parameters (vector of size p)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -742,25 +579,18 @@ frequentiel&quot;, 2013.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array_like</span></dt>
-<dd><p class="first last">observation vector (size N)</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D array_like</span></dt>
-<dd><p class="first last">design matrix (size N x p)</p>
-</dd>
-<dt><strong>S</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D array_like</span></dt>
-<dd><p class="first last">power spectrum (size N). The covariance matrix in the Fourier domain is
-assumed to be diagonal and equal to diag(S)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Y</strong> (<em>1D array_like</em>) -- observation vector (size N)</li>
+<li><strong>A</strong> (<em>2D array_like</em>) -- design matrix (size N x p)</li>
+<li><strong>S</strong> (<em>1D array_like</em>) -- power spectrum (size N). The covariance matrix in the Fourier domain is
+assumed to be diagonal and equal to diag(S)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated set of parameters (vector of size p)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>X</strong> -- estimated set of parameters (vector of size p)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -773,120 +603,46 @@ assumed to be diagonal and equal to diag(S)</p>
 <dl class="class">
 <dt id="mecm.localestimator.PSD_estimate">
 <em class="property">class </em><code class="descclassname">mecm.localestimator.</code><code class="descname">PSD_estimate</code><span class="sig-paren">(</span><em>N_est</em>, <em>N</em>, <em>Npoints</em>, <em>h_min=None</em>, <em>h_max=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mecm/localestimator.html#PSD_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mecm.localestimator.PSD_estimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class providing methods to estimate and calculate the power spectral density
 of 1-D stationary processes with continuous, smooth spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>N_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of frequency points where to estimate the noise power spectral
-density (on a logarithmic grid)</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">size of the analysed time series</p>
-</dd>
-<dt><strong>Npoints</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the Fourier grid on which the PSD is estimated. This means that
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>N_est</strong> (<em>scalar integer</em>) -- number of frequency points where to estimate the noise power spectral
+density (on a logarithmic grid)</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- size of the analysed time series</li>
+<li><strong>Npoints</strong> (<em>scalar integer</em>) -- Size of the Fourier grid on which the PSD is estimated. This means that
 the PSD can be evaluated at normalized frequencies between 1/Npoints and
-1/2</p>
-</dd>
-<dt><strong>h_min</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional</span></dt>
-<dd><p class="first last">minimal value of the smoothing parameter</p>
-</dd>
-<dt><strong>h_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional</span></dt>
-<dd><p class="first last">maximal value of the smoothing parameter</p>
-</dd>
-</dl>
+1/2</li>
+<li><strong>h_min</strong> (<em>scalar float, optional</em>) -- minimal value of the smoothing parameter</li>
+<li><strong>h_max</strong> (<em>scalar float, optional</em>) -- maximal value of the smoothing parameter</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>N_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of frequency points where to estimate the noise power spectral
-density (on a logarithmic grid)</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">size of the analysed time series</p>
-</dd>
-<dt><strong>f_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of normalized frequencies (size N_est) at which the PSD is
-estimated</p>
-</dd>
-<dt><strong>S_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of PSD estimates at frequencies contained in f_est (size N_est)</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of smoothing parameter values corresponding to the PSD estimates
-at frequencies contained in f_est (size N_est)</p>
-</dd>
-<dt><strong>I</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">periodogram of the data (size N)</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</p>
-</dd>
-<dt><strong>ST</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">quantity used in the computation of the PSD estimates, that only depends
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>N_est</strong> (<em>scalar integer</em>) -- number of frequency points where to estimate the noise power spectral
+density (on a logarithmic grid)</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- size of the analysed time series</li>
+<li><strong>f_est</strong> (<em>array_like</em>) -- vector of normalized frequencies (size N_est) at which the PSD is
+estimated</li>
+<li><strong>S_est</strong> (<em>array_like</em>) -- vector of PSD estimates at frequencies contained in f_est (size N_est)</li>
+<li><strong>h</strong> (<em>array_like</em>) -- vector of smoothing parameter values corresponding to the PSD estimates
+at frequencies contained in f_est (size N_est)</li>
+<li><strong>I</strong> (<em>array_like</em>) -- periodogram of the data (size N)</li>
+<li><strong>V</strong> (<em>numpy array</em>) -- normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</li>
+<li><strong>ST</strong> (<em>array_like</em>) -- quantity used in the computation of the PSD estimates, that only depends
 on the chosen kernel, the data size N and smoothing parameter h. It can
 be used again for another computation involving different data of same
-size.</p>
-</dd>
-<dt><strong>PSD_function</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function of one variable</span></dt>
-<dd><p class="first last">function giving the value of the estimated PSD at any normalized
-frequency between 1/Npoints and 1/2.</p>
-</dd>
-<dt><strong>PSD_variance_function</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function of one variable</span></dt>
-<dd><p class="first last">function giving the value of the estimated normalized log-PSD variance at
-any normalized frequency between 1/Npoints and 1/2.</p>
-</dd>
-</dl>
+size.</li>
+<li><strong>PSD_function</strong> (<em>function of one variable</em>) -- function giving the value of the estimated PSD at any normalized
+frequency between 1/Npoints and 1/2.</li>
+<li><strong>PSD_variance_function</strong> (<em>function of one variable</em>) -- function giving the value of the estimated normalized log-PSD variance at
+any normalized frequency between 1/Npoints and 1/2.</li>
+</ul>
 </td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.MLestimate" title="mecm.localestimator.PSD_estimate.MLestimate"><code class="xref py py-obj docutils literal"><span class="pre">MLestimate</span></code></a>(x[,&nbsp;w,&nbsp;Niter])</td>
-<td>method computing the PSD estimate of the input data x at frequencies</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.MLestimateFromI" title="mecm.localestimator.PSD_estimate.MLestimateFromI"><code class="xref py py-obj docutils literal"><span class="pre">MLestimateFromI</span></code></a>(I[,&nbsp;Niter])</td>
-<td>method computing the PSD estimate from the input periodogram I at</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.calculate" title="mecm.localestimator.PSD_estimate.calculate"><code class="xref py py-obj docutils literal"><span class="pre">calculate</span></code></a>(arg)</td>
-<td>method calculating the value of the PSD function at either a given vector</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.calculateST" title="mecm.localestimator.PSD_estimate.calculateST"><code class="xref py py-obj docutils literal"><span class="pre">calculateST</span></code></a>(f,&nbsp;h,&nbsp;N[,&nbsp;ker])</td>
-<td>Method calculating a kernel-dependant quantity that is necessary for the PSD estimation.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.calculateVariance" title="mecm.localestimator.PSD_estimate.calculateVariance"><code class="xref py py-obj docutils literal"><span class="pre">calculateVariance</span></code></a>(arg)</td>
-<td>method calculating the value of the PSD function at either a given</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.estimate" title="mecm.localestimator.PSD_estimate.estimate"><code class="xref py py-obj docutils literal"><span class="pre">estimate</span></code></a>(x[,&nbsp;w,&nbsp;periodogram])</td>
-<td>method computing the PSD estimate of the input data x at frequencies</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#mecm.localestimator.PSD_estimate.estimateFromI" title="mecm.localestimator.PSD_estimate.estimateFromI"><code class="xref py py-obj docutils literal"><span class="pre">estimateFromI</span></code></a>(I)</td>
-<td>method computing the PSD estimate from the values of the input</td>
-</tr>
-</tbody>
-</table>
-<table border="1" class="docutils">
-<colgroup>
-<col width="70%" />
-<col width="30%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><strong>conditionalEstimate</strong></td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td><strong>confidenceInterval</strong></td>
-<td>&#160;</td>
 </tr>
 </tbody>
 </table>
@@ -900,18 +656,12 @@ Calculate or update the values of the attributes S_est, PSD_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">input data array (size N)</p>
-</dd>
-<dt><strong>w</strong> <span class="classifier-delimiter">:</span> <span class="classifier">characted string</span></dt>
-<dd><p class="first last">type of apodization window to apply</p>
-</dd>
-<dt><strong>Niter</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of iterations in the Newton-Raphson algorithm used to compute
-the maximum likelihood estimate.</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>array_like</em>) -- input data array (size N)</li>
+<li><strong>w</strong> (<em>characted string</em>) -- type of apodization window to apply</li>
+<li><strong>Niter</strong> (<em>scalar integer</em>) -- number of iterations in the Newton-Raphson algorithm used to compute
+the maximum likelihood estimate.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -929,15 +679,11 @@ Calculate or update the values of the attributes S_est, PSD_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>I</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">periodogram array (size N)</p>
-</dd>
-<dt><strong>Niter</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of iterations in the Newton-Raphson algorithm used to compute
-the maximum likelihood estimate.</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>I</strong> (<em>array_like</em>) -- periodogram array (size N)</li>
+<li><strong>Niter</strong> (<em>scalar integer</em>) -- number of iterations in the Newton-Raphson algorithm used to compute
+the maximum likelihood estimate.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -955,20 +701,12 @@ intput.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like or scalar integer</span></dt>
-<dd><p class="first last">vector of frequencies value or size of the Fourier grid where to
-evaluate the PSD function.</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>array_like or scalar integer</em>) -- vector of frequencies value or size of the Fourier grid where to
+evaluate the PSD function.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>S_est_N_sym</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of PSD values corresponding to specified input frequencies</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>S_est_N_sym</strong> -- vector of PSD values corresponding to specified input frequencies</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
 </tr>
 </tbody>
 </table>
@@ -983,34 +721,23 @@ PSD estimation.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of frequencies where to estimate the PSD</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">smoothing parameter</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">size of the analysed data</p>
-</dd>
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','gauss'}, optional</span></dt>
-<dd><p class="first last">type of kernel smoothing function</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>f</strong> (<em>array_like</em>) -- vector of frequencies where to estimate the PSD</li>
+<li><strong>h</strong> (<em>scalar float</em>) -- smoothing parameter</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- size of the analysed data</li>
+<li><strong>ker</strong> (<em>{'epa','gauss'}, optional</em>) -- type of kernel smoothing function</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ST</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">quantity used in the computation of the PSD estimates, that only
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>ST</strong> (<em>array_like</em>) -- quantity used in the computation of the PSD estimates, that only
 depends on the chosen kernel, the data size N and smoothing
 parameter h. It can be used again for another computation involving
-different data samples of same size.</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">normalized estimator variance: V * pi^2/6 is the estimated variance
-of log(S_est)</p>
-</dd>
-</dl>
+different data samples of same size.</li>
+<li><strong>V</strong> (<em>numpy array</em>) -- normalized estimator variance: V * pi^2/6 is the estimated variance
+of log(S_est)</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -1028,21 +755,13 @@ intput.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>args</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like or scalar integer</span></dt>
-<dd><p class="first last">vector of frequencies value or size of the Fourier grid where to
-evaluate the PSD function.</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>array_like or scalar integer</em>) -- vector of frequencies value or size of the Fourier grid where to
+evaluate the PSD function.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>variance_N_sym</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of (normalized) PSD variances corresponding to specified
-input frequencies</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>variance_N_sym</strong> -- vector of (normalized) PSD variances corresponding to specified
+input frequencies</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like</td>
 </tr>
 </tbody>
 </table>
@@ -1069,17 +788,11 @@ PSD_variance_function, and possibly I</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Input data array (size N)</p>
-</dd>
-<dt><strong>w</strong> <span class="classifier-delimiter">:</span> <span class="classifier">characted string</span></dt>
-<dd><p class="first last">type of apodization window to apply</p>
-</dd>
-<dt><strong>periodogram</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, the periodogram is stored in the attribute &quot;I&quot;</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>array_like</em>) -- Input data array (size N)</li>
+<li><strong>w</strong> (<em>characted string</em>) -- type of apodization window to apply</li>
+<li><strong>periodogram</strong> (<em>boolean</em>) -- if True, the periodogram is stored in the attribute &quot;I&quot;</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -1096,17 +809,11 @@ PSD_function, PSD_variance_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Input data array (size N)</p>
-</dd>
-<dt><strong>w</strong> <span class="classifier-delimiter">:</span> <span class="classifier">characted string</span></dt>
-<dd><p class="first last">type of apodization window to apply</p>
-</dd>
-<dt><strong>periodogram</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, the periodogram is stored in the attribute &quot;I&quot;</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<em>array_like</em>) -- Input data array (size N)</li>
+<li><strong>w</strong> (<em>characted string</em>) -- type of apodization window to apply</li>
+<li><strong>periodogram</strong> (<em>boolean</em>) -- if True, the periodogram is stored in the attribute &quot;I&quot;</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -1123,19 +830,11 @@ PSD_function, PSD_variance_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">input abscissa (size N)</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>y</strong> (<em>array_like</em>) -- input abscissa (size N)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">value of the kernel function at y</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ker</strong> -- value of the kernel function at y</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like (size N)</td>
 </tr>
 </tbody>
 </table>
@@ -1149,19 +848,11 @@ PSD_function, PSD_variance_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">input abscissa (size N)</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>y</strong> (<em>array_like</em>) -- input abscissa (size N)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">value of the kernel function at y</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ker</strong> -- value of the kernel function at y</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array_like (size N)</td>
 </tr>
 </tbody>
 </table>
@@ -1175,21 +866,16 @@ PSD_function, PSD_variance_function</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">input data vector to smooth (size N)</p>
-</dd>
-<dt><strong>kind</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','ker'}</span></dt>
-<dd><p class="first last">Type of smoothing kernel</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>array_like</em>) -- input data vector to smooth (size N)</li>
+<li><strong>kind</strong> (<em>{'epa','ker'}</em>) -- Type of smoothing kernel</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ker(y)</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">value of the kernel function at y</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ker(y)</strong> -- value of the kernel function at y</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like (size N)</p>
 </td>
 </tr>
 </tbody>
@@ -1211,51 +897,28 @@ pp. 371-394</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array</span></dt>
-<dd><p class="first last">the intput data (time series of size N)</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array or scalar</span></dt>
-<dd><p class="first last">frequency</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">smoothing parameter vector (size J)</p>
-</dd>
-<dt><strong>wind</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string</span></dt>
-<dd><p class="first last">type of apodization window to apply (hanning or rectangular)</p>
-</dd>
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','ker'}, optional</span></dt>
-<dd><p class="first last">Type of smoothing kernel</p>
-</dd>
-<dt><strong>variance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (True or False), optional</span></dt>
-<dd><p class="first last">determines wether to calculate quantities required to estimate the
-variance of the PSD estimate</p>
-</dd>
-<dt><strong>ST_given</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or scalar (float), optional</span></dt>
-<dd><p class="first last">quantity used in the computation, that only depends on the chosen kernel
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>1-D numpy array</em>) -- the intput data (time series of size N)</li>
+<li><strong>f</strong> (<em>1-D numpy array or scalar</em>) -- frequency</li>
+<li><strong>h</strong> (<em>array_like</em>) -- smoothing parameter vector (size J)</li>
+<li><strong>wind</strong> (<em>character string</em>) -- type of apodization window to apply (hanning or rectangular)</li>
+<li><strong>ker</strong> (<em>{'epa','ker'}, optional</em>) -- Type of smoothing kernel</li>
+<li><strong>variance</strong> (<em>boolean (True or False), optional</em>) -- determines wether to calculate quantities required to estimate the
+variance of the PSD estimate</li>
+<li><strong>ST_given</strong> (<em>None or scalar (float), optional</em>) -- quantity used in the computation, that only depends on the chosen kernel
 and smoothing parameter h. It can be already calcualted from a previous
-computation. Otherwise, leave it as None.</p>
-</dd>
-</dl>
+computation. Otherwise, leave it as None.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>S_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated spectrum (size J)</p>
-</dd>
-<dt><strong>b_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated bias (size J)</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</p>
-</dd>
-<dt><strong>sigma2_0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">normalized weighted residual sum of squares</p>
-</dd>
-<dt><strong>I</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">periodogram of the input data (size N)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>S_est</strong> (<em>numpy array</em>) -- estimated spectrum (size J)</li>
+<li><strong>b_est</strong> (<em>numpy array</em>) -- estimated bias (size J)</li>
+<li><strong>V</strong> (<em>numpy array</em>) -- normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</li>
+<li><strong>sigma2_0</strong> (<em>scalar float</em>) -- normalized weighted residual sum of squares</li>
+<li><strong>I</strong> (<em>array_like</em>) -- periodogram of the input data (size N)</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -1277,53 +940,30 @@ pp. 371-394</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>I</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array of size N</span></dt>
-<dd><p class="first last">periodogram of the analysed data</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array or scalar</span></dt>
-<dd><p class="first last">frequency</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">smoothing parameter vector (size J)</p>
-</dd>
-<dt><strong>wind</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string</span></dt>
-<dd><p class="first last">type of apodization window to apply (hanning or rectangular)</p>
-</dd>
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','ker'}, optional</span></dt>
-<dd><p class="first last">Type of smoothing kernel</p>
-</dd>
-<dt><strong>variance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (True or False), optional</span></dt>
-<dd><p class="first last">determines wether to calculate quantities required to estimate the
-variance of the PSD estimate</p>
-</dd>
-<dt><strong>ST_given</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or scalar (float), optional</span></dt>
-<dd><p class="first last">quantity used in the computation, that only depends on the chosen kernel
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>I</strong> (<em>1-D numpy array of size N</em>) -- periodogram of the analysed data</li>
+<li><strong>f</strong> (<em>1-D numpy array or scalar</em>) -- frequency</li>
+<li><strong>h</strong> (<em>array_like</em>) -- smoothing parameter vector (size J)</li>
+<li><strong>wind</strong> (<em>character string</em>) -- type of apodization window to apply (hanning or rectangular)</li>
+<li><strong>ker</strong> (<em>{'epa','ker'}, optional</em>) -- Type of smoothing kernel</li>
+<li><strong>variance</strong> (<em>boolean (True or False), optional</em>) -- determines wether to calculate quantities required to estimate the
+variance of the PSD estimate</li>
+<li><strong>ST_given</strong> (<em>None or scalar (float), optional</em>) -- quantity used in the computation, that only depends on the chosen kernel
 and smoothing parameter h. It can be already calcualted from a previous
-computation. Otherwise, leave it as None.</p>
-</dd>
-</dl>
+computation. Otherwise, leave it as None.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>S_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated spectrum (size J)</p>
-</dd>
-<dt><strong>b_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated bias (size J)</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</p>
-</dd>
-<dt><strong>sigma2_0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">normalized weighted residual sum of squares</p>
-</dd>
-<dt><strong>ST</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">quantity used in the computation, that only depends on the chosen kernel,
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>S_est</strong> (<em>numpy array</em>) -- estimated spectrum (size J)</li>
+<li><strong>b_est</strong> (<em>numpy array</em>) -- estimated bias (size J)</li>
+<li><strong>V</strong> (<em>numpy array</em>) -- normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</li>
+<li><strong>sigma2_0</strong> (<em>scalar float</em>) -- normalized weighted residual sum of squares</li>
+<li><strong>ST</strong> (<em>array_like</em>) -- quantity used in the computation, that only depends on the chosen kernel,
 the data size N and smoothing parameter h. It can be used again for
-another computation involving different data of same size.</p>
-</dd>
-</dl>
+another computation involving different data of same size.</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -1345,53 +985,30 @@ pp. 371-394</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array of size N</span></dt>
-<dd><p class="first last">log-periodogram of the analysed data</p>
-</dd>
-<dt><strong>f0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1-D numpy array or scalar</span></dt>
-<dd><p class="first last">vector of frequencies where to estimate the PSD</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">smoothing parameter vector (size J)</p>
-</dd>
-<dt><strong>wind</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string</span></dt>
-<dd><p class="first last">type of apodization window to apply (hanning or rectangular)</p>
-</dd>
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','ker'}, optional</span></dt>
-<dd><p class="first last">Type of smoothing kernel</p>
-</dd>
-<dt><strong>variance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (True or False), optional</span></dt>
-<dd><p class="first last">determines wether to calculate quantities required to estimate the
-variance of the PSD estimate</p>
-</dd>
-<dt><strong>ST_given</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or scalar (float), optional</span></dt>
-<dd><p class="first last">quantity used in the computation, that only depends on the chosen kernel
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Y</strong> (<em>1-D numpy array of size N</em>) -- log-periodogram of the analysed data</li>
+<li><strong>f0</strong> (<em>1-D numpy array or scalar</em>) -- vector of frequencies where to estimate the PSD</li>
+<li><strong>h</strong> (<em>array_like</em>) -- smoothing parameter vector (size J)</li>
+<li><strong>wind</strong> (<em>character string</em>) -- type of apodization window to apply (hanning or rectangular)</li>
+<li><strong>ker</strong> (<em>{'epa','ker'}, optional</em>) -- Type of smoothing kernel</li>
+<li><strong>variance</strong> (<em>boolean (True or False), optional</em>) -- determines wether to calculate quantities required to estimate the
+variance of the PSD estimate</li>
+<li><strong>ST_given</strong> (<em>None or scalar (float), optional</em>) -- quantity used in the computation, that only depends on the chosen kernel
 and smoothing parameter h. It can be already calcualted from a previous
-computation. Otherwise, leave it as None.</p>
-</dd>
-</dl>
+computation. Otherwise, leave it as None.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>S_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated spectrum (size J)</p>
-</dd>
-<dt><strong>b_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">estimated bias (size J)</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</p>
-</dd>
-<dt><strong>sigma2_0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">normalized weighted residual sum of squares</p>
-</dd>
-<dt><strong>ST</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">quantity used in the computation, that only depends on the chosen kernel,
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>S_est</strong> (<em>numpy array</em>) -- estimated spectrum (size J)</li>
+<li><strong>b_est</strong> (<em>numpy array</em>) -- estimated bias (size J)</li>
+<li><strong>V</strong> (<em>numpy array</em>) -- normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)</li>
+<li><strong>sigma2_0</strong> (<em>scalar float</em>) -- normalized weighted residual sum of squares</li>
+<li><strong>ST</strong> (<em>array_like</em>) -- quantity used in the computation, that only depends on the chosen kernel,
 the data size N and smoothing parameter h. It can be used again for
-another computation involving different data of same size.</p>
-</dd>
-</dl>
+another computation involving different data of same size.</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -1407,48 +1024,27 @@ fj, given that the input data are available at points f.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Input data array (size N)</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Abscissa correponding to the input data (size N)</p>
-</dd>
-<dt><strong>fj</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Abscissa correponding to the output estimate (size J)</p>
-</dd>
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">smoothing parameter vector (size J)</p>
-</dd>
-<dt><strong>ker</strong> <span class="classifier-delimiter">:</span> <span class="classifier">{'epa','ker'}, optional</span></dt>
-<dd><p class="first last">Type of smoothing kernel</p>
-</dd>
-<dt><strong>variance</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd><p class="first last">If True the estiamated variance of the local linear estimate is provided
-as an output</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>array_like</em>) -- Input data array (size N)</li>
+<li><strong>f</strong> (<em>array_like</em>) -- Abscissa correponding to the input data (size N)</li>
+<li><strong>fj</strong> (<em>array_like</em>) -- Abscissa correponding to the output estimate (size J)</li>
+<li><strong>h</strong> (<em>array_like</em>) -- smoothing parameter vector (size J)</li>
+<li><strong>ker</strong> (<em>{'epa','ker'}, optional</em>) -- Type of smoothing kernel</li>
+<li><strong>variance</strong> (<em>boolean, optional</em>) -- If True the estiamated variance of the local linear estimate is provided
+as an output</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>m_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Output estimated smooth function (intersect points, size J)</p>
-</dd>
-<dt><strong>b_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">Output estimated slopes (size J)</p>
-</dd>
-<dt><strong>V</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">normalized variance of the estimate (size J)</p>
-</dd>
-<dt><strong>sigma2_0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">normalized weighted residual sum of squares
-V * pi^2/6</p>
-</dd>
-<dt><strong>ST</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">kernel-dependant quantity that does not depend on the data (may be
-useful to perform several calculations with the same kernel and data size)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>m_est</strong> (<em>array_like</em>) -- Output estimated smooth function (intersect points, size J)</li>
+<li><strong>b_est</strong> (<em>array_like</em>) -- Output estimated slopes (size J)</li>
+<li><strong>V</strong> (<em>array_like</em>) -- normalized variance of the estimate (size J)</li>
+<li><strong>sigma2_0</strong> (<em>scalar float</em>) -- normalized weighted residual sum of squares
+V * pi^2/6</li>
+<li><strong>ST</strong> (<em>array_like</em>) -- kernel-dependant quantity that does not depend on the data (may be
+useful to perform several calculations with the same kernel and data size)</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -1468,19 +1064,11 @@ useful to perform several calculations with the same kernel and data size)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">any positive number (usually the size of the data set)</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>y</strong> (<em>scalar integer</em>) -- any positive number (usually the size of the data set)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>q</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">the lowest integer q such 2^q is greater or equal than the input number</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>q</strong> -- the lowest integer q such 2^q is greater or equal than the input number</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">scalar integer</td>
 </tr>
 </tbody>
 </table>
@@ -1499,41 +1087,24 @@ Where A can be written as A = W_o F* D F W_o^T</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>ind_obs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array of size N_o or list containing the chronological indices of the values
-contained in the observed data vector in the complete data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">vector of size N_o containing the right-hand side of linear system to solve</p>
-</dd>
-<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">vector of size N_o: first guess for the linear system to be solved</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">stopping criterium for the preconditioned conjugate gradient algorithm</p>
-</dd>
-<dt><strong>Psolver</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">preconditionner matrix: linear operator which calculates an approximation
-of the solution: u_approx = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>PCGalgo</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</span></dt>
-<dd><p class="first last">Type of preconditioned conjugate gradient (PCG) algorithm to use among</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ind_obs</strong> (<em>array_like</em>) -- array of size N_o or list containing the chronological indices of the values
+contained in the observed data vector in the complete data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>b</strong> (<em>numpy array</em>) -- vector of size N_o containing the right-hand side of linear system to solve</li>
+<li><strong>x0</strong> (<em>numpy array</em>) -- vector of size N_o: first guess for the linear system to be solved</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- stopping criterium for the preconditioned conjugate gradient algorithm</li>
+<li><strong>Psolver</strong> (<em>sparse.linalg.factorized instance</em>) -- preconditionner matrix: linear operator which calculates an approximation
+of the solution: u_approx = C_OO^{-1} b for any vector b</li>
+<li><strong>PCGalgo</strong> (<em>string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</em>) -- Type of preconditioned conjugate gradient (PCG) algorithm to use among</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>u</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">approximate solution of the linear system</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u</strong> -- approximate solution of the linear system</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -1551,33 +1122,22 @@ for any vector v, where C is a covariance matrix.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input data vector</p>
-</dd>
-<dt><strong>ind_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the input vector in the complete data vector</p>
-</dd>
-<dt><strong>ind_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the output vector in the complete data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y_in</strong> (<em>numpy array</em>) -- input data vector</li>
+<li><strong>ind_in</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the input vector in the complete data vector</li>
+<li><strong>ind_out</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the output vector in the complete data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>Coi_op</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse.linalg.LinearOperator instance</span></dt>
-<dd><p class="first last">linear opreator that computes the vector y_out = Com * y_in for any
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Coi_op</strong> -- linear opreator that computes the vector y_out = Com * y_in for any
 vector of size N_in</p>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scipy.sparse.linalg.LinearOperator instance</p>
 </td>
 </tr>
 </tbody>
@@ -1595,38 +1155,22 @@ bi-conjuage gradient algorithm to each rows of B</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>result</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">the result X that will be uptdated (can be empty at the beginning)</p>
-</dd>
-<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size No</span></dt>
-<dd><p class="first last">initial guess for the solution (can be zeros(No) array)</p>
-</dd>
-<dt><strong>B</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">Matrix of observed vectors (right hand side of the system)</p>
-</dd>
-<dt><strong>A_func: linear operator</strong></dt>
-<dd><p class="first last">linear function of a vector x calculating A*x</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of maximal iterations</p>
-</dd>
-<dt><strong>stp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">stp: stopping criteria</p>
-</dd>
-<dt><strong>P</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse. operator</span></dt>
-<dd><p class="first last">preconditionner operator, calculating Px for all vectors x</p>
-</dd>
-<dt><strong>z0_hat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">first guess for solution, optional (default is None)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>result</strong> (<em>2D numpy array</em>) -- the result X that will be uptdated (can be empty at the beginning)</li>
+<li><strong>x0</strong> (<em>numpy array of size No</em>) -- initial guess for the solution (can be zeros(No) array)</li>
+<li><strong>B</strong> (<em>2D numpy array</em>) -- Matrix of observed vectors (right hand side of the system)</li>
+<li><strong>A_func</strong> (<em>linear operator</em>) -- linear function of a vector x calculating A*x</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- number of maximal iterations</li>
+<li><strong>stp</strong> (<em>scalar float</em>) -- stp: stopping criteria</li>
+<li><strong>P</strong> (<em>scipy.sparse. operator</em>) -- preconditionner operator, calculating Px for all vectors x</li>
+<li><strong>z0_hat</strong> (<em>array_like (size N)</em>) -- first guess for solution, optional (default is None)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>Nothing</strong></dt>
-<dd></dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Nothing</p>
 </td>
 </tr>
 </tbody>
@@ -1657,39 +1201,22 @@ It uses multithreading.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>result</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">the result X that will be uptdated (can be empty at the beginning)</p>
-</dd>
-<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size No</span></dt>
-<dd><p class="first last">initial guess for the solution (can be zeros(No) array)</p>
-</dd>
-<dt><strong>B</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">Matrix of observed vectors (right hand side of the system)</p>
-</dd>
-<dt><strong>A_func: linear operator</strong></dt>
-<dd><p class="first last">linear function of a vector x calculating A*x</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of maximal iterations</p>
-</dd>
-<dt><strong>stp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">stp: stopping criteria</p>
-</dd>
-<dt><strong>P</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse. operator</span></dt>
-<dd><p class="first last">preconditionner operator, calculating Px for all vectors x</p>
-</dd>
-<dt><strong>z0_hat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">first guess for solution, optional (default is None)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>result</strong> (<em>2D numpy array</em>) -- the result X that will be uptdated (can be empty at the beginning)</li>
+<li><strong>x0</strong> (<em>numpy array of size No</em>) -- initial guess for the solution (can be zeros(No) array)</li>
+<li><strong>B</strong> (<em>2D numpy array</em>) -- Matrix of observed vectors (right hand side of the system)</li>
+<li><strong>A_func</strong> (<em>linear operator</em>) -- linear function of a vector x calculating A*x</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- number of maximal iterations</li>
+<li><strong>stp</strong> (<em>scalar float</em>) -- stp: stopping criteria</li>
+<li><strong>P</strong> (<em>scipy.sparse. operator</em>) -- preconditionner operator, calculating Px for all vectors x</li>
+<li><strong>z0_hat</strong> (<em>array_like (size N)</em>) -- first guess for solution, optional (default is None)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">solution of linear systems (size No x K)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>X</strong> -- solution of linear systems (size No x K)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">2D numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -1705,35 +1232,22 @@ It uses multithreading.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input data vector</p>
-</dd>
-<dt><strong>ind_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the input vector in the complete data vector</p>
-</dd>
-<dt><strong>ind_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the output vector in the complete data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the complete data vector</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y_in</strong> (<em>numpy array</em>) -- input data vector</li>
+<li><strong>ind_in</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the input vector in the complete data vector</li>
+<li><strong>ind_out</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the output vector in the complete data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- Size of the complete data vector</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>y_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">y_out = Com * y_in transformed output vector of size N_out</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y_out</strong> -- y_out = Com * y_in transformed output vector of size N_out</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -1749,35 +1263,22 @@ contained in the output vector in the complete data vector</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">2D numpy array</span></dt>
-<dd><p class="first last">input matrix of size (N_in x K)</p>
-</dd>
-<dt><strong>ind_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the input vector in the complete data vector (size N_in)</p>
-</dd>
-<dt><strong>ind_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">array or list containing the chronological indices of the values
-contained in the output vector in the complete data vector (size N_out)</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the complete data vector</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y_in</strong> (<em>2D numpy array</em>) -- input matrix of size (N_in x K)</li>
+<li><strong>ind_in</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the input vector in the complete data vector (size N_in)</li>
+<li><strong>ind_out</strong> (<em>array_like</em>) -- array or list containing the chronological indices of the values
+contained in the output vector in the complete data vector (size N_out)</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- Size of the complete data vector</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>A_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">Matrix (size N_out x K) equal to A_out = Com * A_in</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>A_out</strong> -- Matrix (size N_out x K) equal to A_out = Com * A_in</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -1794,35 +1295,21 @@ with preconditioned bi-conjuage gradient algorithm</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>x0</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size No</span></dt>
-<dd><p class="first last">initial guess for the solution (can be zeros(No) array)</p>
-</dd>
-<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size No</span></dt>
-<dd><p class="first last">observed vector (right hand side of the system)</p>
-</dd>
-<dt><strong>A_func: linear operator</strong></dt>
-<dd><p class="first last">linear function of a vector x calculating A*x</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of maximal iterations</p>
-</dd>
-<dt><strong>stp</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">stp: stopping criteria</p>
-</dd>
-<dt><strong>P</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse. operator</span></dt>
-<dd><p class="first last">preconditionner operator, calculating Px for all vectors x</p>
-</dd>
-<dt><strong>z0_hat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">first guess for solution, optional (default is None)</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x0</strong> (<em>numpy array of size No</em>) -- initial guess for the solution (can be zeros(No) array)</li>
+<li><strong>b</strong> (<em>numpy array of size No</em>) -- observed vector (right hand side of the system)</li>
+<li><strong>A_func</strong> (<em>linear operator</em>) -- linear function of a vector x calculating A*x</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- number of maximal iterations</li>
+<li><strong>stp</strong> (<em>scalar float</em>) -- stp: stopping criteria</li>
+<li><strong>P</strong> (<em>scipy.sparse. operator</em>) -- preconditionner operator, calculating Px for all vectors x</li>
+<li><strong>z0_hat</strong> (<em>array_like (size N)</em>) -- first guess for solution, optional (default is None)</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>x</strong> <span class="classifier-delimiter">:</span> <span class="classifier">the reconstructed vector (numpy array of size N)</span></dt>
-<dd></dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>x</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">the reconstructed vector (numpy array of size N)</p>
 </td>
 </tr>
 </tbody>
@@ -1854,32 +1341,21 @@ function R and size N x N.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input autocovariance functions at each lag (size N)</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
-autocoariance function.</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the complete data vector</p>
-</dd>
-<dt><strong>form</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string (or None), optional</span></dt>
-<dd><p class="first last">storage format of the sparse matrix (default is None)</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd><p class="first last">type of taper function to smoothly decrease the tapered covariance
-function down to zero.</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>R</strong> (<em>numpy array</em>) -- input autocovariance functions at each lag (size N)</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
+autocoariance function.</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- Size of the complete data vector</li>
+<li><strong>form</strong> (<em>character string (or None), optional</em>) -- storage format of the sparse matrix (default is None)</li>
+<li><strong>taper</strong> (<em>string</em>) -- type of taper function to smoothly decrease the tapered covariance
+function down to zero.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>C_tap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scipy.sparse matrix</span></dt>
-<dd><p class="first last">Tappered covariance matrix (size N x N) with p non-zero diagonals.</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>C_tap</strong> -- Tappered covariance matrix (size N x N) with p non-zero diagonals.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scipy.sparse matrix</p>
 </td>
 </tr>
 </tbody>
@@ -1896,33 +1372,22 @@ of the observed data (at points where M==1).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">input autocovariance functions at each lag (size N)</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">mask vector</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>R</strong> (<em>numpy array</em>) -- input autocovariance functions at each lag (size N)</li>
+<li><strong>M</strong> (<em>numpy array</em>) -- mask vector</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>ptype</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'sparse','circulant'}</span></dt>
-<dd><p class="first last">specifies the type of preconditioner matrix (sparse approximation of the
-covariance or circulant approximation of the covariance)</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'Wendland1','Wendland2','Spherical'}</span></dt>
-<dd><p class="first last">name of the taper function. This argument is only used if ptype = 'sparse'</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>ptype</strong> (<em>string {'sparse','circulant'}</em>) -- specifies the type of preconditioner matrix (sparse approximation of the
+covariance or circulant approximation of the covariance)</li>
+<li><strong>taper</strong> (<em>string {'Wendland1','Wendland2','Spherical'}</em>) -- name of the taper function. This argument is only used if ptype = 'sparse'</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">preconditionner operator, calculating P x for all vectors x</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>solve</strong> -- preconditionner operator, calculating P x for all vectors x</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">sparse.linalg.factorized instance</p>
 </td>
 </tr>
 </tbody>
@@ -1938,55 +1403,32 @@ conditionnaly on the observed data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>Np</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the initial random vector which is drawn. The initial vector
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Np</strong> (<em>scalar integer</em>) -- Size of the initial random vector which is drawn. The initial vector
 follows a stationary distribution whose covariance matrix is circulant.
 It is then truncated to N_final to obtain the desired distribution whose
-covariance matrix is Toeplitz.</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Maximum number of conjugate gradient iterations.</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>Coo_func</strong> <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
-<dd><p class="first last">Linear operator that calculates the matrix-to-vector product Coo x for
-any vector x of size No (number of observed data points)</p>
-</dd>
-<dt><strong>solver</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>z_o</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of observed residuals</p>
-</dd>
-<dt><strong>mu_m_given_o</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size Nm)</span></dt>
-<dd><p class="first last">vector of conditional expectation of the missing data given the observed
-data</p>
-</dd>
-<dt><strong>ind_obs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of chronological indices of the observed data points in the
-complete data vector</p>
-</dd>
-<dt><strong>ind_mis</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size No)</span></dt>
-<dd><p class="first last">vector of chronological indices of the missing data points in the
-complete data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">Stoping criteria for the conjugate gradient algorithm, optional</p>
-</dd>
-</dl>
+covariance matrix is Toeplitz.</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- Maximum number of conjugate gradient iterations.</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>Coo_func</strong> (<em>function</em>) -- Linear operator that calculates the matrix-to-vector product Coo x for
+any vector x of size No (number of observed data points)</li>
+<li><strong>solver</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>z_o</strong> (<em>array_like (size No)</em>) -- vector of observed residuals</li>
+<li><strong>mu_m_given_o</strong> (<em>array_like (size Nm)</em>) -- vector of conditional expectation of the missing data given the observed
+data</li>
+<li><strong>ind_obs</strong> (<em>array_like (size No)</em>) -- vector of chronological indices of the observed data points in the
+complete data vector</li>
+<li><strong>ind_mis</strong> (<em>array_like (size No)</em>) -- vector of chronological indices of the missing data points in the
+complete data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- Stoping criteria for the conjugate gradient algorithm, optional</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">realization of the vector of conditional noise given the observed data</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>eps</strong> -- realization of the vector of conditional noise given the observed data</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array (size N)</p>
 </td>
 </tr>
 </tbody>
@@ -2002,36 +1444,21 @@ conditionnaly on the observed data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">input vector of residuals (difference between data and model)</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Maximum number of conjugate gradient iterations.</p>
-</dd>
-<dt><strong>seed</strong> <span class="classifier-delimiter">:</span> <span class="classifier">character string, optional</span></dt>
-<dd><p class="first last">Regenerate the seed with system time (if None) or chosen integer.</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">Stoping criteria for the conjugate gradient algorithm, optional</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>eps</strong> (<em>numpy array (size N)</em>) -- input vector of residuals (difference between data and model)</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- Maximum number of conjugate gradient iterations.</li>
+<li><strong>seed</strong> (<em>character string, optional</em>) -- Regenerate the seed with system time (if None) or chosen integer.</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- Stoping criteria for the conjugate gradient algorithm, optional</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>condDraws</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">Matrix whose rows are realization of the conditional noise vector</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>condDraws</strong> -- Matrix whose rows are realization of the conditional noise vector</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array (size Nd x N)</p>
 </td>
 </tr>
 </tbody>
@@ -2049,47 +1476,26 @@ See &quot;imputation&quot; function for a more general formulation</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>s</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">Input signal array</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K)</span></dt>
-<dd><p class="first last">regression parameter vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P)</span></dt>
-<dd><p class="first last">spectrum array: value of the unilateral PSD times fs</p>
-</dd>
-<dt><strong>R</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P)</span></dt>
-<dd><p class="first last">tappered autocovariance array: value of the autocovariance at all lags</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>s</strong> (<em>array_like (size N)</em>) -- Input signal array</li>
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>beta</strong> (<em>array_like (size K)</em>) -- regression parameter vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P)</em>) -- spectrum array: value of the unilateral PSD times fs</li>
+<li><strong>R</strong> (<em>numpy array (size P)</em>) -- tappered autocovariance array: value of the autocovariance at all lags</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>Nit</strong> (<em>scalar integer</em>) -- maximum number of iterations for the conjugate gradient algorithm</li>
+<li><strong>tol</strong> (<em>scalar float</em>) -- tolerance criterium to stop the PCG algorithm</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>z</strong> <span class="classifier-delimiter">:</span> <span class="classifier">float or ndarray</span></dt>
-<dd><p class="first last">conditional expectation of the data vector</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>z</strong> (<em>float or ndarray</em>) -- conditional expectation of the data vector</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -2106,82 +1512,45 @@ using the M-ECM algorithm.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">masked data vector</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>N_it_max</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of iterations of the M-ECM algorithm</p>
-</dd>
-<dt><strong>eps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the algorithm (default is 1e-8)</p>
-</dd>
-<dt><strong>p</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of lags to calculate the tapered approximation of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>numpy array (size N)</em>) -- masked data vector</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>N_it_max</strong> (<em>scalar integer</em>) -- number of iterations of the M-ECM algorithm</li>
+<li><strong>eps</strong> (<em>scalar float</em>) -- tolerance criterium to stop the algorithm (default is 1e-8)</li>
+<li><strong>p</strong> (<em>scalar integer</em>) -- number of lags to calculate the tapered approximation of the
 autocoariance function. This is needed to pre-conditionate the conjugate
-gradients.</p>
-</dd>
-<dt><strong>Nd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of Monte-Carlo draws to estimate the conditional expectation of
-the noise periodogram with respect to the observed data</p>
-</dd>
-<dt><strong>N_est</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">number of frequency points where to estimate the noise power spectral
-density (on a logarithmic grid)</p>
-</dd>
-<dt><strong>N_it_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm.</p>
-</dd>
-<dt><strong>tol_cg</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm (default is 1e-7)</p>
-</dd>
-<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, a message is printed at the end of each iteration, displaying
-the value of the convergence criterion</p>
-</dd>
-<dt><strong>compute_cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span></dt>
-<dd><p class="first last">if True, the covariance of the estimator is computed</p>
-</dd>
-<dt><strong>PCGalgo</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</span></dt>
-<dd><p class="first last">Type of preconditioned conjugate gradient (PCG) algorithm to use among</p>
-</dd>
-</dl>
+gradients.</li>
+<li><strong>Nd</strong> (<em>scalar integer</em>) -- number of Monte-Carlo draws to estimate the conditional expectation of
+the noise periodogram with respect to the observed data</li>
+<li><strong>N_est</strong> (<em>scalar integer</em>) -- number of frequency points where to estimate the noise power spectral
+density (on a logarithmic grid)</li>
+<li><strong>N_it_cg</strong> (<em>scalar integer</em>) -- maximum number of iterations for the conjugate gradient algorithm.</li>
+<li><strong>tol_cg</strong> (<em>scalar float</em>) -- tolerance criterium to stop the PCG algorithm (default is 1e-7)</li>
+<li><strong>verbose</strong> (<em>boolean</em>) -- if True, a message is printed at the end of each iteration, displaying
+the value of the convergence criterion</li>
+<li><strong>compute_cov</strong> (<em>boolean</em>) -- if True, the covariance of the estimator is computed</li>
+<li><strong>PCGalgo</strong> (<em>string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}</em>) -- Type of preconditioned conjugate gradient (PCG) algorithm to use among</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>beta_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K)</span></dt>
-<dd><p class="first last">final value of the estimated parameter vector</p>
-</dd>
-<dt><strong>cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">None or array_like (size K x K)</span></dt>
-<dd><p class="first last">estimated covariance matrix of the parameter vector. If compute_cov is
-False, then cov is None</p>
-</dd>
-<dt><strong>beta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N_iterations x K)</span></dt>
-<dd><p class="first last">vector storing the updates of the parameter vector at each iteration</p>
-</dd>
-<dt><strong>y_rec</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">reconstructed data vector, i.e. conditional expectation of the data
-given the available observations.</p>
-</dd>
-<dt><strong>I_condMean</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size N)</span></dt>
-<dd><p class="first last">conditional expectation of the noise periodogram</p>
-</dd>
-<dt><strong>PSD</strong> <span class="classifier-delimiter">:</span> <span class="classifier">PSD_estimate class instance</span></dt>
-<dd><p class="first last">class containing all the information regarding the estimated noise PSD</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>beta_new</strong> (<em>array_like (size K)</em>) -- final value of the estimated parameter vector</li>
+<li><strong>cov</strong> (<em>None or array_like (size K x K)</em>) -- estimated covariance matrix of the parameter vector. If compute_cov is
+False, then cov is None</li>
+<li><strong>beta</strong> (<em>array_like (size N_iterations x K)</em>) -- vector storing the updates of the parameter vector at each iteration</li>
+<li><strong>y_rec</strong> (<em>array_like (size N)</em>) -- reconstructed data vector, i.e. conditional expectation of the data
+given the available observations.</li>
+<li><strong>I_condMean</strong> (<em>array_like (size N)</em>) -- conditional expectation of the noise periodogram</li>
+<li><strong>PSD</strong> (<em>PSD_estimate class instance</em>) -- class containing all the information regarding the estimated noise PSD</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">References</p>
-<table class="docutils citation" frame="void" id="id3" rules="none">
+<table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label">[1]</td><td><ol class="first last upperalpha simple" start="17">
@@ -2190,6 +1559,7 @@ given the available observations.</p>
 </td></tr>
 </tbody>
 </table>
+<p class="rubric">Notes</p>
 </dd></dl>
 
 <dl class="function">
@@ -2201,38 +1571,23 @@ multivariate Gaussian maximum likelihood with missing data.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>A</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N x K)</span></dt>
-<dd><p class="first last">design matrix (contains partial derivatives of signal wrt parameters)</p>
-</dd>
-<dt><strong>M</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size N)</span></dt>
-<dd><p class="first last">mask vector (with entries equal to 0 or 1)</p>
-</dd>
-<dt><strong>S_2N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size P &gt;= 2N)</span></dt>
-<dd><p class="first last">PSD vector</p>
-</dd>
-<dt><strong>solve</strong> <span class="classifier-delimiter">:</span> <span class="classifier">sparse.linalg.factorized instance</span></dt>
-<dd><p class="first last">linear operator which calculates x = C_OO^{-1} b for any vector b</p>
-</dd>
-<dt><strong>Nit</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer, optional</span></dt>
-<dd><p class="first last">maximum number of iterations for the conjugate gradient algorithm.</p>
-</dd>
-<dt><strong>tol</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional</span></dt>
-<dd><p class="first last">tolerance criterium to stop the PCG algorithm (default is 1e-7)</p>
-</dd>
-<dt><strong>r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float, optional (default is 1e-15)</span></dt>
-<dd><p class="first last">Cutoff for small singular values when computing the inverse matrix.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>A</strong> (<em>numpy array (size N x K)</em>) -- design matrix (contains partial derivatives of signal wrt parameters)</li>
+<li><strong>M</strong> (<em>numpy array (size N)</em>) -- mask vector (with entries equal to 0 or 1)</li>
+<li><strong>S_2N</strong> (<em>numpy array (size P &gt;= 2N)</em>) -- PSD vector</li>
+<li><strong>solve</strong> (<em>sparse.linalg.factorized instance</em>) -- linear operator which calculates x = C_OO^{-1} b for any vector b</li>
+<li><strong>Nit</strong> (<em>scalar integer, optional</em>) -- maximum number of iterations for the conjugate gradient algorithm.</li>
+<li><strong>tol</strong> (<em>scalar float, optional</em>) -- tolerance criterium to stop the PCG algorithm (default is 1e-7)</li>
+<li><strong>r</strong> (<em>scalar float, optional (default is 1e-15)</em>) -- Cutoff for small singular values when computing the inverse matrix.
 Singular values smaller (in modulus) than rcond * largest_singular_value
-(in modulus) are set to zero.</p>
-</dd>
-</dl>
+(in modulus) are set to zero.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>cov</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like (size K x K)</span></dt>
-<dd><p class="first last">estimated covariance matrix of the parameter vector</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cov</strong> -- estimated covariance matrix of the parameter vector</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array_like (size K x K)</p>
 </td>
 </tr>
 </tbody>
@@ -2248,22 +1603,14 @@ of Fourier frequencies nfft (possible zero-padding) and apodization window.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>x_mat</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">data for which the periodogram must be computed. Can be a one-dimentional
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_mat</strong> (<em>numpy array (size Nd x N)</em>) -- data for which the periodogram must be computed. Can be a one-dimentional
 vector or a matrix containing a time series in each row. The function
 computes as many periodograms as there are rows in x_mat, and returns
-a matrix of same size as x_mat.</p>
-</dd>
-</dl>
-</td>
+a matrix of same size as x_mat.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>Per</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array (size Nd x N)</span></dt>
-<dd><p class="first last">matrix (or vector) of periodogram</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>Per</strong> -- matrix (or vector) of periodogram</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy array (size Nd x N)</td>
 </tr>
 </tbody>
 </table>
@@ -2283,24 +1630,17 @@ Pages 502–523,2006</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>h</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">lag</p>
-</dd>
-<dt><strong>theta</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">taper parameter</p>
-</dd>
-<dt><strong>taper</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string {'Wendland1','Wendland2','Spherical'}</span></dt>
-<dd><p class="first last">name of the taper function</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>h</strong> (<em>numpy array of size N</em>) -- lag</li>
+<li><strong>theta</strong> (<em>scalar float</em>) -- taper parameter</li>
+<li><strong>taper</strong> (<em>string {'Wendland1','Wendland2','Spherical'}</em>) -- name of the taper function</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>C_tap</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">the taper covariance function values (vector of size N)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>C_tap</strong> -- the taper covariance function values (vector of size N)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -2323,27 +1663,21 @@ should be done afterwards.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>DSP</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
-<dd><p class="first last">vector of size N_DSP continaing the noise DSP calculated at frequencies
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>DSP</strong> (<em>array_like</em>) -- vector of size N_DSP continaing the noise DSP calculated at frequencies
 between -fe/N_DSP and fe/N_DSP where fe is the sampling frequency and N
 is the size of the time series (it will be the size of the returned
-temporal noise vector b)</p>
-</dd>
-<dt><strong>N</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Size of the output time series</p>
-</dd>
-<dt><strong>fe</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar float</span></dt>
-<dd><p class="first last">sampling frequency</p>
-</dd>
-</dl>
+temporal noise vector b)</li>
+<li><strong>N</strong> (<em>scalar integer</em>) -- Size of the output time series</li>
+<li><strong>fe</strong> (<em>scalar float</em>) -- sampling frequency</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>b</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">temporal sample of the colored noise (size N)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>b</strong> (<em>numpy array</em>)</li>
+<li><em>temporal sample of the colored noise (size N)</em></li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -2361,21 +1695,16 @@ N_DSP is the data size (number of required DSP points)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>values</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D-array</span></dt>
-<dd><p class="first last">Positive frequencies DSP values (vector of size N_fft)</p>
-</dd>
-<dt><strong>N_DSP</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">Number of required DSP points</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>values</strong> (<em>1D-array</em>) -- Positive frequencies DSP values (vector of size N_fft)</li>
+<li><strong>N_DSP</strong> (<em>scalar integer</em>) -- Number of required DSP points</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>DSP</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">Noise DSP (N vector)</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>DSP</strong> -- Noise DSP (N vector)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
 </td>
 </tr>
 </tbody>
@@ -2397,19 +1726,11 @@ This is another way to handle the singularity at zero.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>DSPvalues</strong> <span class="classifier-delimiter">:</span> <span class="classifier">1D-array</span></dt>
-<dd><p class="first last">Positifve frequencies DSP values (vector of size N_fft)</p>
-</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>DSPvalues</strong> (<em>1D-array</em>) -- Positifve frequencies DSP values (vector of size N_fft)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>DSP</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span></dt>
-<dd><p class="first last">Noise DSP (N vector)</p>
-</dd>
-</dl>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>DSP</strong> -- Noise DSP (N vector)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy array</td>
 </tr>
 </tbody>
 </table>
@@ -2426,27 +1747,18 @@ This is another way to handle the singularity at zero.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>m</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">index of the first derivative d2 logS / dajdam</p>
-</dd>
-<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">index of the second derivative d2 logS / dajdam</p>
-</dd>
-<dt><strong>fq</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size J</span></dt>
-<dd><p class="first last">frequency vector locating the bounds of the segments</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">frequencies where to compute the PSD, in increasing order</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>m</strong> (<em>scalar integer</em>) -- index of the first derivative d2 logS / dajdam</li>
+<li><strong>j</strong> (<em>scalar integer</em>) -- index of the second derivative d2 logS / dajdam</li>
+<li><strong>fq</strong> (<em>numpy array of size J</em>) -- frequency vector locating the bounds of the segments</li>
+<li><strong>f</strong> (<em>numpy array of size N</em>) -- frequencies where to compute the PSD, in increasing order</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>dlogSda</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array size N</span></dt>
-<dd><p class="first last">values of the derivatives of the log-PSD calculated at frequencies f</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>dlogSda</strong> -- values of the derivatives of the log-PSD calculated at frequencies f</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array size N</p>
 </td>
 </tr>
 </tbody>
@@ -2461,24 +1773,17 @@ This is another way to handle the singularity at zero.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>j</strong> <span class="classifier-delimiter">:</span> <span class="classifier">scalar integer</span></dt>
-<dd><p class="first last">index of the derivative d logS / daj</p>
-</dd>
-<dt><strong>fq</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size J</span></dt>
-<dd><p class="first last">frequency vector locating the bounds of the segments</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">frequencies where to compute the PSD, in increasing order</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>j</strong> (<em>scalar integer</em>) -- index of the derivative d logS / daj</li>
+<li><strong>fq</strong> (<em>numpy array of size J</em>) -- frequency vector locating the bounds of the segments</li>
+<li><strong>f</strong> (<em>numpy array of size N</em>) -- frequencies where to compute the PSD, in increasing order</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>dlogSda</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array size N</span></dt>
-<dd><p class="first last">values of the derivatives of the log-PSD calculated at frequencies f</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>dlogSda</strong> -- values of the derivatives of the log-PSD calculated at frequencies f</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array size N</p>
 </td>
 </tr>
 </tbody>
@@ -2493,21 +1798,16 @@ This is another way to handle the singularity at zero.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>f_in</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">input frequency vector</p>
-</dd>
-<dt><strong>f_target</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N_est</span></dt>
-<dd><p class="first last">target frequency vector</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>f_in</strong> (<em>numpy array of size N</em>) -- input frequency vector</li>
+<li><strong>f_target</strong> (<em>numpy array of size N_est</em>) -- target frequency vector</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>i_out</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array size &lt; N_est</span></dt>
-<dd><p class="first last">indices where f_in is close to f_target</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>i_out</strong> -- indices where f_in is close to f_target</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array size &lt; N_est</p>
 </td>
 </tr>
 </tbody>
@@ -2529,24 +1829,17 @@ loglike = -1/2 * Sum_k ( log Sk + np.abs(zk)^2 /Sk  )</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
-<dt><strong>a</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size J</span></dt>
-<dd><p class="first last">coefficients of the PSD model</p>
-</dd>
-<dt><strong>fq</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size J</span></dt>
-<dd><p class="first last">frequency vector locating the bounds of the segments</p>
-</dd>
-<dt><strong>f</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of size N</span></dt>
-<dd><p class="first last">frequencies where to compute the PSD, in increasing order</p>
-</dd>
-</dl>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> (<em>numpy array of size J</em>) -- coefficients of the PSD model</li>
+<li><strong>fq</strong> (<em>numpy array of size J</em>) -- frequency vector locating the bounds of the segments</li>
+<li><strong>f</strong> (<em>numpy array of size N</em>) -- frequencies where to compute the PSD, in increasing order</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>S</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array size N</span></dt>
-<dd><p class="first last">PSD values calculated at frequencies f</p>
-</dd>
-</dl>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>S</strong> -- PSD values calculated at frequencies f</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array size N</p>
 </td>
 </tr>
 </tbody>

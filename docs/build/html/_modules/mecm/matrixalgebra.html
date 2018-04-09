@@ -275,8 +275,8 @@
 <span class="s2">        reconstruction.&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current criterium: &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">sr</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">b_norm</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &gt; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stp</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">x</span><span class="p">,</span><span class="n">sr</span><span class="c1">#,sz</span></div>
-
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span><span class="n">sr</span><span class="c1">#,sz</span>
+</div>
 
 <span class="c1">#@jit(&#39;void(float64[:,:], float64[:], float64[:,:],float64[:](float64[:]),float64)&#39;, nopython=True, nogil=True)</span>
 <span class="c1">#@jit(nopython=True, nogil=True)</span>
@@ -348,8 +348,8 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PCG complete for parameter &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, with exit status:&quot;</span><span class="p">)</span>
             <span class="n">printPCGstatus</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Value of || A * x - b ||/||b|| at exit:&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">result</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">B</span><span class="p">[:,</span><span class="n">k</span><span class="p">])</span><span class="o">/</span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">B</span><span class="p">[:,</span><span class="n">k</span><span class="p">])))</span></div>
-
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">result</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">-</span><span class="n">B</span><span class="p">[:,</span><span class="n">k</span><span class="p">])</span><span class="o">/</span><span class="n">LA</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">B</span><span class="p">[:,</span><span class="n">k</span><span class="p">])))</span>
+</div>
 
 
 
@@ -366,8 +366,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;convergence to tolerance not achieved&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;number of iterations: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="p">))</span>
     <span class="k">elif</span> <span class="n">info</span><span class="o">&lt;</span><span class="mi">0</span> <span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;illegal input or breakdown.&quot;</span><span class="p">)</span></div>
-
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;illegal input or breakdown.&quot;</span><span class="p">)</span>
+</div>
 
 <div class="viewcode-block" id="make_singlethread"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.make_singlethread">[docs]</a><span class="k">def</span> <span class="nf">make_singlethread</span><span class="p">(</span><span class="n">inner_func</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -381,8 +381,8 @@
         <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">No</span><span class="p">,</span><span class="n">length</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">matprecondBiCGSTAB</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">func</span></div>
-
+    <span class="k">return</span> <span class="n">func</span>
+</div>
 
 <div class="viewcode-block" id="make_multithread"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.make_multithread">[docs]</a><span class="k">def</span> <span class="nf">make_multithread</span><span class="p">(</span><span class="n">inner_func</span><span class="p">,</span> <span class="n">numthreads</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -411,8 +411,8 @@
         <span class="k">for</span> <span class="n">thread</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
             <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">func_mt</span></div>
-
+    <span class="k">return</span> <span class="n">func_mt</span>
+</div>
 
 <div class="viewcode-block" id="matPrecondBiCGSTAB"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.matPrecondBiCGSTAB">[docs]</a><span class="k">def</span> <span class="nf">matPrecondBiCGSTAB</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">A_func</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">stp</span><span class="p">,</span><span class="n">P</span><span class="p">,</span><span class="n">PCGalgo</span> <span class="o">=</span> <span class="s1">&#39;scipy&#39;</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -466,8 +466,8 @@
 
     <span class="n">res</span> <span class="o">=</span> <span class="n">func_PrecondBiCGSTAB_mt</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">A_func</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">stp</span><span class="p">,</span><span class="n">P</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">res</span></div>
-
+    <span class="k">return</span> <span class="n">res</span>
+</div>
 
 
 <span class="c1"># ==============================================================================</span>
@@ -509,8 +509,8 @@
 
     <span class="n">N_fft</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S_2N</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span> <span class="n">ifft</span><span class="p">(</span> <span class="n">S_2N</span> <span class="o">*</span> <span class="n">fft</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">y</span><span class="p">,</span><span class="n">N_fft</span><span class="p">)</span> <span class="p">)[</span><span class="n">ind_out</span><span class="p">]</span> <span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span> <span class="n">ifft</span><span class="p">(</span> <span class="n">S_2N</span> <span class="o">*</span> <span class="n">fft</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">y</span><span class="p">,</span><span class="n">N_fft</span><span class="p">)</span> <span class="p">)[</span><span class="n">ind_out</span><span class="p">]</span> <span class="p">)</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="matmatProd"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.matmatProd">[docs]</a><span class="k">def</span> <span class="nf">matmatProd</span><span class="p">(</span><span class="n">A_in</span><span class="p">,</span><span class="n">ind_in</span><span class="p">,</span><span class="n">ind_out</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">):</span>
@@ -556,8 +556,8 @@
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
         <span class="n">A_out</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">matVectProd</span><span class="p">(</span><span class="n">A_in</span><span class="p">[:,</span><span class="n">j</span><span class="p">],</span><span class="n">ind_in</span><span class="p">,</span><span class="n">ind_out</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">A_out</span></div>
-
+    <span class="k">return</span> <span class="n">A_out</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="covLinearOp"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.covLinearOp">[docs]</a><span class="k">def</span> <span class="nf">covLinearOp</span><span class="p">(</span><span class="n">ind_in</span><span class="p">,</span><span class="n">ind_out</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">):</span>
@@ -604,8 +604,8 @@
     <span class="n">Coi_op</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N_out</span><span class="p">,</span><span class="n">N_in</span><span class="p">),</span><span class="n">matvec</span><span class="o">=</span><span class="n">C_func</span><span class="p">,</span>
     <span class="n">rmatvec</span> <span class="o">=</span> <span class="n">CH_func</span><span class="p">,</span><span class="n">matmat</span> <span class="o">=</span> <span class="n">Cmat_func</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">Coi_op</span></div>
-
+    <span class="k">return</span> <span class="n">Coi_op</span>
+</div>
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="precondLinearOp"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.precondLinearOp">[docs]</a><span class="k">def</span> <span class="nf">precondLinearOp</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span><span class="n">N_out</span><span class="p">,</span><span class="n">N_in</span><span class="p">):</span>
 
@@ -618,8 +618,8 @@
     <span class="n">P_op</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N_out</span><span class="p">,</span><span class="n">N_in</span><span class="p">),</span><span class="n">matvec</span><span class="o">=</span><span class="n">P_func</span><span class="p">,</span>
     <span class="n">rmatvec</span> <span class="o">=</span> <span class="n">PH_func</span><span class="p">,</span><span class="n">matmat</span> <span class="o">=</span> <span class="n">Pmat_func</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">P_op</span></div>
-
+    <span class="k">return</span> <span class="n">P_op</span>
+</div>
 
 <div class="viewcode-block" id="PCGsolve"><a class="viewcode-back" href="../../mecm.html#mecm.matrixalgebra.PCGsolve">[docs]</a><span class="k">def</span> <span class="nf">PCGsolve</span><span class="p">(</span><span class="n">ind_obs</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">maxiter</span><span class="p">,</span><span class="n">Psolver</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -689,8 +689,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown PCG algorithm name&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">u</span></div>
-</pre></div>
+    <span class="k">return</span> <span class="n">u</span>
+</pre></div></div>
 
            </div>
            

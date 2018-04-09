@@ -228,8 +228,8 @@
         <span class="c1"># Include the symmetric values for negative frequencies</span>
         <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">N_DSP</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">DSP</span></div>
-
+    <span class="k">return</span> <span class="n">DSP</span>
+</div>
 
 
 <div class="viewcode-block" id="symmetrize_shift"><a class="viewcode-back" href="../../mecm.html#mecm.noise.symmetrize_shift">[docs]</a><span class="k">def</span> <span class="nf">symmetrize_shift</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">fe</span><span class="p">)</span> <span class="p">:</span>
@@ -291,8 +291,8 @@
         <span class="c1"># Include the symmetric values for negative frequencies</span>
         <span class="n">DSP</span><span class="p">[</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DSP</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">N_fft</span><span class="o">+</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">DSP</span></div>
-
+    <span class="k">return</span> <span class="n">DSP</span>
+</div>
 
 
 <div class="viewcode-block" id="generateNoiseFromDSP"><a class="viewcode-back" href="../../mecm.html#mecm.noise.generateNoiseFromDSP">[docs]</a><span class="k">def</span> <span class="nf">generateNoiseFromDSP</span><span class="p">(</span><span class="n">DSP</span><span class="p">,</span><span class="n">fe</span><span class="p">)</span> <span class="p">:</span>
@@ -385,8 +385,8 @@
     <span class="n">S</span> <span class="o">=</span> <span class="n">fe</span><span class="o">/</span><span class="mf">2.</span><span class="o">*</span><span class="n">DSP</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="c1">#return b[N_DSP/2:N_DSP/2+N]*np.sqrt(np.var(b)/np.var(b[N_DSP/2:N_DSP/2+N])),S</span>
-    <span class="k">return</span> <span class="n">b</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Noise_TF</span><span class="c1">#*np.sqrt(np.var(b)/np.var(b[0:N])),S</span></div>
-</pre></div>
+    <span class="k">return</span> <span class="n">b</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Noise_TF</span><span class="c1">#*np.sqrt(np.var(b)/np.var(b[0:N])),S</span>
+</pre></div></div>
 
            </div>
            

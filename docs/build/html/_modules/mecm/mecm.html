@@ -341,8 +341,8 @@
         <span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-    <span class="k">return</span> <span class="n">beta_new</span><span class="p">,</span><span class="n">cov</span><span class="p">,</span><span class="n">beta_vect</span><span class="p">,</span><span class="n">y_rec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">],</span><span class="n">I_condMean</span><span class="p">,</span><span class="n">PSD</span></div>
-
+    <span class="k">return</span> <span class="n">beta_new</span><span class="p">,</span><span class="n">cov</span><span class="p">,</span><span class="n">beta_vect</span><span class="p">,</span><span class="n">y_rec</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N</span><span class="p">],</span><span class="n">I_condMean</span><span class="p">,</span><span class="n">PSD</span>
+</div>
 
 
 <span class="c1"># ==============================================================================</span>
@@ -407,8 +407,8 @@
         <span class="s2">&quot;SVD did not converge&quot;</span>
 
 
-    <span class="k">return</span> <span class="n">cov</span><span class="p">,</span><span class="n">U</span></div>
-
+    <span class="k">return</span> <span class="n">cov</span><span class="p">,</span><span class="n">U</span>
+</div>
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="periodogram"><a class="viewcode-back" href="../../mecm.html#mecm.periodogram">[docs]</a><span class="k">def</span> <span class="nf">periodogram</span><span class="p">(</span><span class="n">x_mat</span><span class="p">,</span><span class="n">nfft</span><span class="p">,</span><span class="n">wind</span> <span class="o">=</span> <span class="s1">&#39;hanning&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -462,8 +462,8 @@
         <span class="n">K2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">Per</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">fft</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">x_mat</span><span class="p">,</span><span class="n">w</span><span class="p">),</span> <span class="n">n</span> <span class="o">=</span> <span class="n">nfft</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">K2</span>
 
-    <span class="k">return</span> <span class="n">Per</span></div>
-
+    <span class="k">return</span> <span class="n">Per</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="conditionalDraw"><a class="viewcode-back" href="../../mecm.html#mecm.conditionalDraw">[docs]</a><span class="k">def</span> <span class="nf">conditionalDraw</span><span class="p">(</span><span class="n">Np</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solver</span><span class="p">,</span><span class="n">z_o</span><span class="p">,</span><span class="n">mu_m_given_o</span><span class="p">,</span><span class="n">ind_obs</span><span class="p">,</span>
@@ -541,8 +541,8 @@
     <span class="c1"># Missing data points and extension to 2N points</span>
     <span class="n">eps</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu_m_given_o</span> <span class="o">+</span> <span class="n">e</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_m_o</span>
 
-    <span class="k">return</span> <span class="n">eps</span></div>
-
+    <span class="k">return</span> <span class="n">eps</span>
+</div>
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="conditionalMonteCarlo"><a class="viewcode-back" href="../../mecm.html#mecm.conditionalMonteCarlo">[docs]</a><span class="k">def</span> <span class="nf">conditionalMonteCarlo</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">Nd</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -604,8 +604,8 @@
         <span class="n">condDraws</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">conditionalDraw</span><span class="p">(</span><span class="n">Np</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">solve</span><span class="p">,</span><span class="n">eps_o</span><span class="p">,</span><span class="n">mu_m_given_o</span><span class="p">,</span>
         <span class="n">ind_obs</span><span class="p">,</span><span class="n">ind_mis</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">condDraws</span></div>
-
+    <span class="k">return</span> <span class="n">condDraws</span>
+</div>
 
 
 
@@ -663,8 +663,8 @@
             <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="o">-</span><span class="n">i</span><span class="p">))</span>
 
 
-    <span class="k">return</span> <span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="n">form</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+</div>
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="conjGradImputation"><a class="viewcode-back" href="../../mecm.html#mecm.conjGradImputation">[docs]</a><span class="k">def</span> <span class="nf">conjGradImputation</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">S_2N</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">Nit</span><span class="p">,</span><span class="n">PCGalgo</span><span class="p">,</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -742,8 +742,8 @@
     <span class="n">z</span><span class="p">[</span><span class="n">ind_mis</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
 
 
-    <span class="k">return</span> <span class="n">z</span><span class="p">,</span><span class="n">solve</span></div>
-
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span><span class="n">solve</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="taperCovariance"><a class="viewcode-back" href="../../mecm.html#mecm.taperCovariance">[docs]</a><span class="k">def</span> <span class="nf">taperCovariance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland1&#39;</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
@@ -828,8 +828,8 @@
 
 
 
-    <span class="k">return</span> <span class="n">C</span></div>
-
+    <span class="k">return</span> <span class="n">C</span>
+</div>
 
 <span class="c1"># ==============================================================================</span>
 <div class="viewcode-block" id="computePrecond"><a class="viewcode-back" href="../../mecm.html#mecm.computePrecond">[docs]</a><span class="k">def</span> <span class="nf">computePrecond</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">ptype</span> <span class="o">=</span> <span class="s1">&#39;sparse&#39;</span><span class="p">,</span><span class="n">taper</span> <span class="o">=</span> <span class="s1">&#39;Wendland2&#39;</span><span class="p">):</span>
@@ -888,8 +888,8 @@
         <span class="n">N_fft</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
         <span class="n">solve</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">ifft</span><span class="p">(</span><span class="n">fft</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">N_fft</span><span class="p">)</span><span class="o">/</span><span class="n">S</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
 
-    <span class="k">return</span> <span class="n">solve</span></div>
-</pre></div>
+    <span class="k">return</span> <span class="n">solve</span>
+</pre></div></div>
 
            </div>
            
