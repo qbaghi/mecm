@@ -29,7 +29,7 @@ where:
 
   * A is the design matrix (size N x K)
 
-  * beta is the vector of parameters to estimate (size K)
+  * :math:`\beta` is the vector of parameters to estimate (size K)
 
   * n is the noise vector, assumed to follow a Gaussian stationary distribution with a given smooth spectral density S(f)
 
@@ -42,13 +42,13 @@ So in fact we observe only a vector y_obs such that
 
   y_obs = y[M==1]
 
-The mecm package implements a method to estimate $\beta$ and $S(f)$ given y_obs,
+The mecm package implements a method to estimate :math:`\beta` and S(f) given y_obs,
 A and M.
 
 
 The main methods of the package are:
 
-  * maxlike: quasi-maximum likelihood estimation with missing data for gaussian stationary models of the form $y = A*beta + epsilon$
+  * maxlike: quasi-maximum likelihood estimation with missing data for gaussian stationary models of the form :math:`y = A \beta + \epsilon`
 
   * PSD_estimate: a class to perform power spectral density estimation with local linear smoothers.
 
