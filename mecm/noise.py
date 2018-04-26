@@ -11,7 +11,6 @@ import pyfftw
 import sys
 from pyfftw.interfaces.numpy_fft import fft, ifft
 pyfftw.interfaces.cache.enable()
-from numba import jit
 
 
 def symmetrize(values,N_DSP) :

@@ -11,7 +11,7 @@ from numpy import linalg as LA
 from scipy import sparse
 import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
-from numba import jit
+#from numba import jit
 # For parallel loops
 #from numba import njit, prange
 pyfftw.interfaces.cache.enable()
