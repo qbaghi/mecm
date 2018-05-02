@@ -70,8 +70,6 @@ Prior to installation make sure that the following python packages are already i
 
 * cvxopt: http://cvxopt.org/
 
-* numba: https://numba.pydata.org/
-
 
 
 Installation
