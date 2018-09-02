@@ -13,5 +13,5 @@ setup(name='mecm',
     license='see LICENSE.txt',
     keywords="",
     packages= find_packages(exclude='docs'),
-    install_requires=['numpy','scipy','pyfftw','cvxopt'])
+    install_requires=['numpy','scipy','pyfftw'])
 #    install_requires=['numpy','scipy','pyfftw','cvxopt','numba'])
