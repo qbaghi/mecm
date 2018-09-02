@@ -512,6 +512,9 @@ class PSD_estimate:
         density (on a logarithmic grid)
     N : scalar integer
         size of the analysed time series
+    Npoints : scalar integer
+        Define the minimum and maximum frequencies of the logarithmic grid
+        (of size N_est) where the PSD is estimated
     f_est : array_like
         vector of normalized frequencies (size N_est) at which the PSD is
         estimated
@@ -565,7 +568,7 @@ class PSD_estimate:
 
         self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],self.V[self.f_est>0]*np.pi**2/6.)
 
-    def estimate(self,x,w='hanning',periodogram=False):
+    def estimate(self,x,w='hanning',periodogram=False,variance = False,kind='linear'):
         """
         method computing the PSD estimate of the input data x at frequencies
         fj contained in f_est, using the local least-squares technique
@@ -581,21 +584,26 @@ class PSD_estimate:
             type of apodization window to apply
         periodogram : boolean
             if True, the periodogram is stored in the attribute "I"
+        variance : boolean
+            if True, compute an estimate of the variance of the PSD estimator
+        kind : string
+            Specifies the kind of interpolation
 
         """
         # Estimation of the PSD function
         self.S_est,b_est,V_est,sigma2_0_est,I=localLinearEstimator(x,self.f_est,
-        self.h,wind=w,ST_given = self.ST)
+        self.h,wind=w,variance = variance,ST_given = self.ST)
         # Calcualte the interpolation function
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est))
-        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
-        V_est[self.f_est>0]*np.pi**2/6.)
+        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
+        kind = kind)
+        if variance:
+            self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
+            V_est[self.f_est>0]*np.pi**2/6.,kind=kind)
 
-        if periodogram == True:
-
+        if periodogram:
             self.I = I
 
-    def estimateFromI(self,I):
+    def estimateFromI(self,I,variance = False,kind='linear'):
         """
         method computing the PSD estimate from the values of the input
         periodogram I. Calculate or update the values of the attributes S_est,
@@ -616,10 +624,14 @@ class PSD_estimate:
 
 
         # Estimation of the PSD function
-        self.S_est,b_est,V_est,sigma2_0_est,_=localLinearEstimatorFromI(I,self.f_est,self.h,ST_given = self.ST)
+        self.S_est,b_est,V_est,sigma2_0_est,_=localLinearEstimatorFromI(I,
+        self.f_est,self.h,variance = variance,ST_given = self.ST)
         # Calcualte the interpolation function
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est))
-        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],V_est[self.f_est>0]*np.pi**2/6.)
+        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
+        kind = kind)
+        if variance:
+            self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
+            V_est[self.f_est>0]*np.pi**2/6.,kind=kind)
 
     def MLestimateFromI(self,I,Niter = 1):
         """
@@ -722,20 +734,22 @@ class PSD_estimate:
         if type(arg)==np.int:
             N = arg
             f = np.fft.fftfreq(N)
-        elif type(arg) == np.array:
+            n = np.int( (N-1)/2.)
+            m_est_interp_N = self.PSD_function(f[0:n+1])
+            # Symmetrize the estimates
+            SN = np.exp(m_est_interp_N[1:n+1])
+            S_est_N_sym = symmetrize(np.real(SN),N)
+            # Take the exponential value
+            S_est_N_sym[0] = np.exp(np.real(m_est_interp_N[0]))
+
+        elif type(arg) == np.ndarray:
             f = arg[:]
-            N = len(f)
+            m_est_interp = self.PSD_function(f)
+            S_est_N_sym = np.exp(m_est_interp)
 
+        else:
+            raise TypeError("Argument must be integer or ndarray")
 
-        n = np.int( (N-1)/2.)
-
-        m_est_interp_N = self.PSD_function(f[0:n+1])
-
-        # Symmetrize the estimates
-        SN = np.exp(m_est_interp_N[1:n+1])
-        S_est_N_sym = symmetrize(np.real(SN),N)
-        # Take the exponential value
-        S_est_N_sym[0] = np.exp(np.real(m_est_interp_N[0]))
 
         return S_est_N_sym
 
@@ -765,16 +779,18 @@ class PSD_estimate:
         if type(arg)==np.int:
             N = arg
             f = np.fft.fftfreq(N)
-        elif type(arg) == np.array:
+            n = np.int( (N-1)/2.)
+
+            variance_N = self.PSD_variance_function(f[1:n+1])
+            variance_N_sym = symmetrize(np.real(variance_N),N)
+
+        elif type(arg) == np.ndarray:
             f = arg[:]
-            N = len(f)
+            variance_N_sym = self.PSD_variance_function(f)
 
-        f = np.fft.fftfreq(N)
-        n = np.int( (N-1)/2.)
+        else:
+            raise TypeError("Argument must be integer or ndarray")
 
-        variance_N = self.PSD_variance_function(f[1:n+1])
-
-        variance_N_sym = symmetrize(np.real(variance_N),N)
 
         return variance_N_sym
 
