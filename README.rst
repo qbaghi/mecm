@@ -68,8 +68,6 @@ Prior to installation make sure that the following python packages are already i
 
 * pyFFTW: https://pypi.python.org/pypi/pyFFTW
 
-* cvxopt: http://cvxopt.org/
-
 
 
 Installation
