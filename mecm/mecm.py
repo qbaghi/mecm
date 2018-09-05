@@ -5,8 +5,6 @@
 # based on missing data imputation by conditional distribution using FFT.
 # ==============================================================================
 import numpy as np
-import cvxopt
-from cvxopt import matrix, spmatrix, amd, cholmod, umfpack
 from scipy import sparse
 from scipy import stats
 from scipy import interpolate
@@ -31,6 +29,7 @@ from .localestimator import nextpow2,PSD_estimate
 def maxlike(y,M,A,N_it_max=15,eps=1e-4,p=20,Nd=10,N_est=1000,Nit_cg=200,
 tol_cg=1e-5,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
     """
+
     Function estimating the regression parameters for a problem of
     multivariate Gaussian maximum likelihood with missing data,
     using the M-ECM algorithm.
