@@ -466,9 +466,11 @@ def precondLinearOp(solver,N_out,N_in):
     P_func = lambda x: solver(x)
     PH_func = lambda x: solver(x)
     def Pmat_func(X):
-        Z = np.empty((N_out,X.shape[1]),dtype = np.float64)
-        for j in range(X.shape[1]):
-            Z[:,j] = solver(X[:,j])
+        # Z = np.empty((N_out,X.shape[1]),dtype = np.float64)
+        # for j in range(X.shape[1]):
+        #     Z[:,j] = solver(X[:,j])
+        return np.array([solver(X[:,j]) for j in range(X.shape[1])]).T
+    
     P_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=P_func,
     rmatvec = PH_func,matmat = Pmat_func,dtype=np.float64)
 
