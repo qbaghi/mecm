@@ -26,8 +26,8 @@ from .localestimator import nextpow2,PSD_estimate
 
 
 
-def maxlike(y,M,A,N_it_max=15,eps=1e-4,p=20,Nd=10,N_est=1000,Nit_cg=200,
-tol_cg=1e-5,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
+def maxlike(y,M,A,N_it_max=15,eps=1e-3,p=20,Nd=10,N_est=1000,Nit_cg=200,
+tol_cg=1e-4,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
     """
 
     Function estimating the regression parameters for a problem of
@@ -45,7 +45,7 @@ tol_cg=1e-5,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
     N_it_max : scalar integer
         number of iterations of the M-ECM algorithm
     eps : scalar float
-        tolerance criterium to stop the algorithm (default is 1e-8)
+        tolerance criterium to stop the ECM algorithm (default is 1e-3)
     p : scalar integer
         number of lags to calculate the tapered approximation of the
         autocoariance function. This is needed to pre-conditionate the conjugate
@@ -59,7 +59,8 @@ tol_cg=1e-5,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
     N_it_cg : scalar integer
         maximum number of iterations for the conjugate gradient algorithm.
     tol_cg : scalar float
-        tolerance criterium to stop the PCG algorithm (default is 1e-7)
+        tolerance criterium to stop the PCG algorithm (default is 1e-4). Stops
+        when the relative residual error ||A x - b||/||b|| is below tol_cg.
     verbose : boolean
         if True, a message is printed at the end of each iteration, displaying
         the value of the convergence criterion
