@@ -179,24 +179,25 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,PCGalgo):
 
     elif 'scipy' in PCGalgo:
         for k in range(result.shape[1]):
+            tol_eff = np.min([stp,stp*LA.norm(B[:,k])])
             if (PCGalgo == 'scipy') | (PCGalgo == 'scipy.bicgstab'):
                 result[:,k],info = sparse.linalg.bicgstab(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P,callback=None)
+                tol=tol_eff,maxiter=Nit,M=P,callback=None)
             elif (PCGalgo == 'scipy.bicg'):
                 result[:,k],info = sparse.linalg.bicg(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P,callback=None)
+                tol=tol_eff,maxiter=Nit,M=P,callback=None)
             elif (PCGalgo == 'scipy.cg'):
                 result[:,k],info = sparse.linalg.cg(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P,callback=None)
+                tol=tol_eff,maxiter=Nit,M=P,callback=None)
             elif (PCGalgo == 'scipy.cgs'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P,callback=None)
+                tol=tol_eff,maxiter=Nit,M=P,callback=None)
             elif (PCGalgo == 'scipy.gmres'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P)
+                tol=tol_eff,maxiter=Nit,M=P)
             elif (PCGalgo == 'scipy.lgmres'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=stp*LA.norm(B[:,k]),maxiter=Nit,M=P)
+                tol=tol_eff,maxiter=Nit,M=P)
             else:
                 raise ValueError("Unknown PCG algorithm name")
             print("PCG complete for parameter "+str(k) + ", with exit status:")
@@ -470,7 +471,7 @@ def precondLinearOp(solver,N_out,N_in):
         # for j in range(X.shape[1]):
         #     Z[:,j] = solver(X[:,j])
         return np.array([solver(X[:,j]) for j in range(X.shape[1])]).T
-    
+
     P_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=P_func,
     rmatvec = PH_func,matmat = Pmat_func,dtype=np.float64)
 
@@ -521,21 +522,22 @@ def PCGsolve(ind_obs,M,S_2N,b,x0,tol,maxiter,Psolver,PCGalgo):
     elif 'scipy' in PCGalgo:
         Coo_op = covLinearOp(ind_obs,ind_obs,M,S_2N)
         P_op = precondLinearOp(Psolver,N_o,N_o)
+        tol_eff = np.min([tol,tol*LA.norm(b)])
         if (PCGalgo == 'scipy') | (PCGalgo == 'scipy.bicgstab'):
             u,info = sparse.linalg.bicgstab(Coo_op, b, x0=x0,
-            tol=tol*LA.norm(b),maxiter=maxiter,M=P_op,callback=None)
+            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
         elif (PCGalgo == 'scipy.bicg'):
             u,info = sparse.linalg.bicg(Coo_op, b, x0=x0,
-            tol=tol*LA.norm(b),maxiter=maxiter,M=P_op,callback=None)
+            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
         elif (PCGalgo == 'scipy.cg'):
             u,info = sparse.linalg.cg(Coo_op, b, x0=x0,
-            tol=tol*LA.norm(b),maxiter=maxiter,M=P_op,callback=None)
+            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
         elif (PCGalgo == 'scipy.cgs'):
             u,info = sparse.linalg.cgs(Coo_op, b, x0=x0,
-            tol=tol*LA.norm(b),maxiter=maxiter,M=P_op,callback=None)
+            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
         else:
             raise ValueError("Unknown PCG algorithm name")
