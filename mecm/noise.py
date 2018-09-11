@@ -148,7 +148,7 @@ def symmetrize_shift(values,N,fe) :
 
 
 
-def generateNoiseFromDSP(DSP,fe) :
+def generateNoiseFromDSP(DSP,fe,myseed = None) :
     """
     Function generating a colored noise from a vector containing the DSP.
     The DSP contains Np points such that Np > 2N and the output noise should
@@ -169,7 +169,9 @@ def generateNoiseFromDSP(DSP,fe) :
         Size of the output time series
     fe : scalar float
         sampling frequency
-
+    myseed : scalar integer or None
+        seed of the random number generator
+        
     Returns
     -------
         b : numpy array
@@ -179,7 +181,7 @@ def generateNoiseFromDSP(DSP,fe) :
     # Size of the DSP
     N_DSP = len(DSP)
     # Initialize seed for generating random numbers
-    random.seed()
+    random.seed(myseed)
 
     # If N is even
     if (N_DSP % 2 == 0) :
