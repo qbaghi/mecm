@@ -38,14 +38,25 @@ def findclosestfrequencies(f_in,f_target):
 
 
 
-def psdfunction(a,fq,f):
+def logpsdfunction(a,b,fq,f):
     """
     PSD function whose logarithm is peacewise linear
 
+
+    y_k = a_j * x_k + b_j for xk in [x_j , x_j+1]
+
+    where
+
+    y_k = log(S(fk))
+    x_k = log(fk)
+
+
     Parameters
     ----------
-    a : numpy array of size J
-        coefficients of the PSD model
+    a : numpy array of size J-1
+        slope coefficients of the PSD model
+    b : numpy array of size J-1
+        local intercept coefficients of the PSD model
     fq : numpy array of size J
         frequency vector locating the bounds of the segments
     f : numpy array of size N
@@ -55,39 +66,68 @@ def psdfunction(a,fq,f):
     Returns
     -------
 
-    S : numpy array size N
+    logS : numpy array size N
         PSD values calculated at frequencies f
     """
 
     N = len(f)
+    logS = np.zeros(N,dtype = np.float64)
     J = len(fq)
-    logS = np.zeros(N)
+    x = np.log(f)
 
-    ind0 = np.int( np.min( np.where(fq <= f[0])  ) )
-    ind1 = np.int( np.max( np.where(fq > f[N-1]) ) )
+    for j in range(J-1):
 
-    i=0
+        inds = np.where( (f>=fq[j]) & (f<fq[j+1]) )
+        logS[inds] = a[j]*x[inds] + b[j]
 
-    for j in range(ind0,ind1):
+    # Last frequency
+    inds = np.where( f==fq[J-1] )
+    logS[inds] = a[J-1]*x[inds] + b[J-1]
 
-        fk = f[ (f>=fq[j]) & (f<fq[j+1]) ]
-
-        logS[i:i+len(fk)] = a[j] + (a[j+1]-a[j])*(fk-fq[j])/(fq[j+1]-fq[j])
-
-        i = i + len(fk)
-
-    return np.exp(logS)
+    return logS
 
 
-def dlogSda(j,fq,f):
+def loglike(logPer,a,b,fq,f):
     """
-    Derivatives of the log-PSD with respect to the coefficients a's
+
+    logarithm of the likelihood
 
 
     Parameters
     ----------
-    j : scalar integer
-        index of the derivative d logS / daj
+    logPer : array_like
+        logarithm of the periodogram computed at Fourier frequencies
+    a : numpy array of size J-1
+        slope coefficients of the PSD model
+    b : numpy array of size J-1
+        local intercept coefficients of the PSD model
+    fq : numpy array of size J
+        frequency vector locating the bounds of the segments
+    f : numpy array of size N
+        frequencies where to compute the PSD, in increasing order
+
+    """
+
+    m = logpsdfunction(a,b,fq,f)
+
+    res = np.log(Per-m)
+
+    return np.sum( -np.exp(-res) + res )
+
+def loglike_grad(logPer,a,b,fq,f):
+    """
+
+    Gradient of the log-PSD with respect to the coefficients theta = [a,b]
+
+
+    Parameters
+    ----------
+    logPer : array_like
+        logarithm of the periodogram computed at Fourier frequencies
+    a : numpy array of size J-1
+        slope coefficients of the PSD model
+    b : numpy array of size J-1
+        local intercept coefficients of the PSD model
     fq : numpy array of size J
         frequency vector locating the bounds of the segments
     f : numpy array of size N
@@ -97,23 +137,24 @@ def dlogSda(j,fq,f):
     Returns
     -------
 
-    dlogSda : numpy array size N
+    ll_grad : numpy array size N
         values of the derivatives of the log-PSD calculated at frequencies f
 
     """
 
-    N = len(f)
+    # Derivatives with respect to a
+    dll_a = np.zeros(J-1,dtype = np.float64)
     J = len(fq)
-    dlogSda = np.zeros(N)
+    x = np.log(f)
 
-    if j>0:
-        k1 = np.where( (fq[j-1]<=f) & (f < fq[j]) )[0]
-        dlogSda[k1] = (f[k1]-fq[j-1])/(fq[j]-fq[j-1])
-    if j<J-1:
-        k2 = np.where( (fq[j]<=f) & (f < fq[j+1]) )[0]
-        dlogSda[k2] = (fq[j+1]-f[k1])/(fq[j+1]-fq[j])
+    for j in range(J-1):
+        inds = np.where( (f>=fq[j]) & (f<fq[j+1]) )
+        dll_a[j] = np.sum( -  )
 
-    return dlogSda
+
+
+
+    return ll_grad
 
 
 def jac(a,fq,f,z_fft):
