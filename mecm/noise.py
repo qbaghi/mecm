@@ -171,7 +171,7 @@ def generateNoiseFromDSP(DSP,fe,myseed = None) :
         sampling frequency
     myseed : scalar integer or None
         seed of the random number generator
-        
+
     Returns
     -------
         b : numpy array
@@ -181,24 +181,24 @@ def generateNoiseFromDSP(DSP,fe,myseed = None) :
     # Size of the DSP
     N_DSP = len(DSP)
     # Initialize seed for generating random numbers
-    random.seed(myseed)
+    #random.seed(myseed)
+    np.random.seed(myseed)
 
-    # If N is even
-    if (N_DSP % 2 == 0) :
+    # # If N is even
+    # if (N_DSP % 2 == 0) :
+    #
+    #     N_fft = np.int(N_DSP/2 - 1)
+    #
+    # # If N is odd
+    # else :
+    #
+    #     N_fft = np.int((N_DSP-1)/2)
 
-        N_fft = np.int(N_DSP/2 - 1)
-
-    # If N is odd
-    else :
-
-        N_fft = np.int((N_DSP-1)/2)
-
-
+    N_fft = np.int((N_DSP-1)/2)
     # Real part of the Noise fft : it is a gaussian random variable
-    Noise_TF_real = np.sqrt(0.5)*DSP[0:N_fft+1]*[random.gauss(0,1.) for _ in range(N_fft+1)]
+    Noise_TF_real = np.sqrt(0.5)*DSP[0:N_fft+1]*numpy.random.normal(loc=0.0, scale=1.0, size=N_fft+1) #[random.gauss(0,1.) for _ in range(N_fft+1)]
     # Imaginary part of the Noise fft :
-    Noise_TF_im = np.sqrt(0.5)*DSP[0:N_fft+1]*[random.gauss(0,1.) for _ in range(N_fft+1)]
-    #*np.random.normal(loc=0.0, scale=1.0, size=N_fft+1)
+    Noise_TF_im = np.sqrt(0.5)*DSP[0:N_fft+1]*numpy.random.normal(loc=0.0, scale=1.0, size=N_fft+1)#*[random.gauss(0,1.) for _ in range(N_fft+1)]
     # The Fourier transform must be real in f = 0
     Noise_TF_im[0] = 0.
     Noise_TF_real[0] = Noise_TF_real[0]*np.sqrt(2.)
@@ -206,38 +206,42 @@ def generateNoiseFromDSP(DSP,fe,myseed = None) :
     # Create the NoiseTF complex numbers for positive frequencies
     Noise_TF = Noise_TF_real + 1j*Noise_TF_im
 
-
-
     # To get a real valued signal we must have NoiseTF(-f) = NoiseTF*
     if N_DSP % 2 == 0 :
 
-        # Initialize the total noise TF
-        Noise_sym = np.zeros(N_fft+1) + 1j*np.zeros(N_fft+1)
+        # # Initialize the total noise TF
+        # Noise_sym = np.zeros(N_fft+1,dtype = np.complex128)# np.zeros(N_fft+1) + 1j*np.zeros(N_fft+1)
+        #
+        # #part2 = np.conjugate(Noise_TF[1:N_fft+1])
+        # Noise_sym[1:N_fft+1] = np.conjugate(Noise_TF[1:N_fft+1])[::-1]
+        # # The TF at Nyquist frequency must be real in the case of an even number of data
+        # Noise_sym[0] = DSP[N_fft+1]*np.random.normal(0,1) #random.gauss(0,1)
+        # # Add the symmetric part corresponding to negative frequencies
+        # Noise_TF = np.hstack( (Noise_TF, Noise_sym) )
 
-        part2 = np.conjugate(Noise_TF[1:N_fft+1])
-        Noise_sym[1:N_fft+1] = part2[::-1]
+        # More compact:
         # The TF at Nyquist frequency must be real in the case of an even number of data
-        Noise_sym[0] = DSP[N_fft+1]*random.gauss(0,1)
+        Noise_sym0 = np.array([ DSP[N_fft+1]*np.random.normal(0,1) ])
         # Add the symmetric part corresponding to negative frequencies
-        Noise_TF = np.hstack( (Noise_TF, Noise_sym) )
+        Noise_TF = np.hstack( (Noise_TF, Noise_sym0, np.conj(Noise_TF[1:N_fft+1])[::-1]) )
 
 
 
     else :
 
-        Noise_sym = np.conjugate(Noise_TF[1:len(Noise_TF)])
+        # Noise_sym = np.conjugate(Noise_TF[1:len(Noise_TF)])
+        #
+        # Noise_TF = np.hstack( (Noise_TF, Noise_sym[::-1]) )
+        Noise_TF = np.hstack( (Noise_TF, np.conj(Noise_TF[1:N_fft+1])[::-1]) )
 
-        Noise_TF = np.hstack( (Noise_TF, Noise_sym[::-1]) )
 
-
-    pyfftw.interfaces.cache.enable()
     # Inverse Fourier transform to get the noise time series (and apply the right normalization)
     b = ifft(Noise_TF)*np.sqrt(N_DSP*fe/2.) # One must multiply by fe (to get the right dimension) and divide by 2 because of symmetrization !
                                     # otherwise you say that you have both an uncertainty on positive and negative frequencies values
                                     # which is wrong  because we know that they are equal.
 
     # Noise spectrum :
-    S = fe/2.*DSP**2
+    #S = fe/2.*DSP**2
 
     #return b[N_DSP/2:N_DSP/2+N]*np.sqrt(np.var(b)/np.var(b[N_DSP/2:N_DSP/2+N])),S
-    return b,S,Noise_TF#*np.sqrt(np.var(b)/np.var(b[0:N])),S
+    return b#,S,Noise_TF#*np.sqrt(np.var(b)/np.var(b[0:N])),S
