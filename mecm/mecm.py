@@ -26,7 +26,7 @@ from .localestimator import nextpow2,PSD_estimate
 
 
 
-def maxlike(y,M,A,N_it_max=15,eps=1e-3,p=20,Nd=10,N_est=1000,Nit_cg=200,
+def maxlike(y,M,A,N_it_max=15,eps=1e-3,p=20,Nd=10,N_est=100,Nit_cg=1000,
 tol_cg=1e-4,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
     """
 
@@ -190,7 +190,8 @@ tol_cg=1e-4,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
 
     print("Computation of the covariance...")
     if compute_cov:
-        cov,U = mecmcovariance(A,M,S_2N,solver,PCGalgo,Nit=Nit_cg,tol=tol_cg)
+        cov,U = mecmcovariance(A,M,S_2N,solver,PCGalgo,Nit=Nit_cg,tol=tol_cg,
+        nthreads = 1)
     else:
         cov = None
 
@@ -200,7 +201,7 @@ tol_cg=1e-4,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
 
 
 # ==============================================================================
-def mecmcovariance(A,M,S_2N,solve,PCGalgo,Nit=150,tol=1e-7,r=1e-15):
+def mecmcovariance(A,M,S_2N,solve,PCGalgo,Nit=150,tol=1e-7,r=1e-15, nthreads=4):
     """
     Function estimating the covariance of regression parameters for a problem of
     multivariate Gaussian maximum likelihood with missing data.
@@ -246,11 +247,13 @@ def mecmcovariance(A,M,S_2N,solve,PCGalgo,Nit=150,tol=1e-7,r=1e-15):
 
     if PCGalgo == 'mine':
         Coo_func = lambda x: matVectProd(x,ind_obs,ind_obs,M,S_2N)
-        U = matPrecondBiCGSTAB(x0,A_obs,Coo_func,Nit,tol,solve,PCGalgo=PCGalgo)
+        U = matPrecondBiCGSTAB(x0,A_obs,Coo_func,Nit,tol,solve,PCGalgo=PCGalgo,
+        nthreads = nthreads)
     elif 'scipy' in PCGalgo:
         Coo_op = covLinearOp(ind_obs,ind_obs,M,S_2N)
         P_op = precondLinearOp(solve,len(ind_obs),len(ind_obs))
-        U = matPrecondBiCGSTAB(x0,A_obs,Coo_op,Nit,tol,P_op,PCGalgo=PCGalgo)
+        U = matPrecondBiCGSTAB(x0,A_obs,Coo_op,Nit,tol,P_op,PCGalgo=PCGalgo,
+        nthreads = nthreads)
         #innerPrecondBiCGSTAB(U,x0,A_obs,Coo_op,Nit,tol,P_op,PCGalgo)
 
 
