@@ -201,7 +201,7 @@ tol_cg=1e-4,compute_cov = True,verbose = True,PCGalgo = 'scipy'):
 
 
 # ==============================================================================
-def mecmcovariance(A,M,S_2N,solve,PCGalgo,Nit=150,tol=1e-7,r=1e-15, nthreads=4):
+def mecmcovariance(A,M,S_2N,solve,PCGalgo,Nit=150,tol=1e-7,r=1e-15, nthreads=1):
     """
     Function estimating the covariance of regression parameters for a problem of
     multivariate Gaussian maximum likelihood with missing data.
