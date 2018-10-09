@@ -146,7 +146,7 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,PCGalgo):
     Parameters
     ----------
     result : 2D numpy array
-        the result X that will be uptdated (can be empty at the beginning)
+        the result X that will be updated (can be empty at the beginning)
     x0 : numpy array of size No
         initial guess for the solution (can be zeros(No) array)
     B : 2D numpy array
@@ -166,7 +166,7 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,PCGalgo):
 
     Returns
     -------
-    Nothing
+    Nothing, acts on the argument "result"
 
     """
 
@@ -305,21 +305,14 @@ def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,PCGalgo = 'scipy', nthreads=4):
 
     """
 
-    func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB, nthreads)
+    if nthreads > 1 :
+        func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB, nthreads)
+        res = func_PrecondBiCGSTAB_mt(x0,B,A_func,Nit,stp,P,PCGalgo)
 
-    # # Dimension of the input matrix: K linear systems to solve Ax = B[i]
-    # (Nin,K) = np.shape(B)
-    # Nout = len(x0)
-    # x0_array= np.zeros((K,Nout),dtype = np.float64)
-    # for k in range(K):
-    #     x0_array[k] = x0
-    #
-    # A_func_array = [A_func for k in range(K)]
-    # Nit_array = [Nit for k in range(K)]
-    # stp_array = [stp for k in range(K)]
-    # P_array = [P for k in range(K)]
+    elif nthreads == 1 :
+        res = np.empty((len(x0),B.shape[1]),dtype=np.float64)
+        innerPrecondBiCGSTAB(res,x0,B,A_func,Nit,stp,P,PCGalgo)
 
-    res = func_PrecondBiCGSTAB_mt(x0,B,A_func,Nit,stp,P,PCGalgo)
 
     return res
 
@@ -364,8 +357,8 @@ def matVectProd(y_in,ind_in,ind_out,M,S_2N):
 
     N_fft = len(S_2N)
 
-    return np.real( ifft( S_2N * fft(M*y,N_fft) )[ind_out] )
-
+    #return np.real( ifft( S_2N * fft(M*y,N_fft) )[ind_out] )
+    return np.real( ifft( S_2N * fft(y,N_fft) )[ind_out] )
 
 # ==============================================================================
 def matmatProd(A_in,ind_in,ind_out,M,S_2N):
