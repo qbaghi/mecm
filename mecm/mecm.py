@@ -279,6 +279,10 @@ def periodogram(x_mat,nfft,wind = 'hanning'):
         vector or a matrix containing a time series in each row. The function
         computes as many periodograms as there are rows in x_mat, and returns
         a matrix of same size as x_mat.
+    nfft : scalar integer
+        number of points to consider in the Fourier grid
+    wind : string or array_like
+        name of the apodization window to apply, or window values
 
     Returns
     -------
@@ -291,15 +295,19 @@ def periodogram(x_mat,nfft,wind = 'hanning'):
 
     if l == 1 :
         N = len(x_mat)
-        # Windowing
-        if wind == 'hanning':
-            w = np.hanning(N)
-        elif wind == 'ones':
-            w = np.ones(N)
-        elif isinstance(wind, (list, tuple, np.ndarray)):
-            w = wind
-        else:
-            raise TypeError("Window argument is wrong")
+
+        if type(wind) == str:
+            # Windowing
+            if wind == 'hanning':
+                w = np.hanning(N)
+            elif wind == 'ones':
+                w = np.ones(N)
+            elif isinstance(wind, (list, tuple, np.ndarray)):
+                w = wind
+            else:
+                raise TypeError("Window argument is wrong")
+        elif ( type(wind) == list ) | ( type(wind) == np.ndarray ):
+            w = wind[:]
 
         K2 = np.sum(w**2)
         Per = np.abs( fft( x_mat*w, nfft ) )**2 / K2
@@ -307,14 +315,18 @@ def periodogram(x_mat,nfft,wind = 'hanning'):
     elif l==2 :
         (Nd,N) = np.shape(x_mat)
         # Windowing
-        if wind == 'hanning':
-            w = np.hanning(N)
-        elif wind == 'ones':
-            w = np.ones(N)
-        elif isinstance(wind, (list, tuple, np.ndarray)):
-            w = wind
-        else:
-            raise TypeError("Window argument is wrong")
+        if type(wind) == str:
+            if wind == 'hanning':
+                w = np.hanning(N)
+            elif wind == 'ones':
+                w = np.ones(N)
+            elif isinstance(wind, (list, tuple, np.ndarray)):
+                w = wind
+            else:
+                raise TypeError("Window argument is wrong")
+
+        elif ( type(wind) == list ) | ( type(wind) == np.ndarray ):
+            w = wind[:]
 
         K2 = np.sum(w**2)
         Per = np.abs( fft( np.multiply(x_mat,w), n = nfft, axis = 1 ) )**2 / K2
