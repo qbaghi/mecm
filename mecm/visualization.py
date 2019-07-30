@@ -25,7 +25,9 @@ def covariance_matrix_time(psd_func, fs, n_points):
     """
 
     freq = np.fft.fftfreq(2 * n_points) * fs
-    autocorr = np.real(ifft(psd_func(freq))) * fs
+    freq_pos = np.abs(freq)
+    freq_pos[0] = freq_pos[1]
+    autocorr = np.real(ifft(psd_func(freq_pos))) * fs
 
     cov = LA.toeplitz(autocorr[0:n_points])
 
@@ -37,7 +39,7 @@ def fourier_transform_matrix(n_points):
     k = np.array([np.arange(0, n_points)]).T
     n = np.array([np.arange(0, n_points)])
 
-    tf_mat = np.exp(-2 * np.pi * np.dot(k, n) / n_points)
+    tf_mat = np.exp(-2 * np.pi * 1j * np.dot(k, n) / np.float(n_points))
 
     return tf_mat
 
