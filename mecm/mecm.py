@@ -476,11 +476,8 @@ def conditionalMonteCarlo(eps,solve,M,Nd,S_2N,Nit,PCGalgo,seed = None,tol=1e-7):
     return condDraws
 
 
-
-
-
 # ==============================================================================
-def buildSparseCov2(R,p,N,form=None,taper = 'Wendland2'):
+def build_sparse_cov2(autocorr, p, n_data, form=None, taper='Wendland2'):
     """
     This function constructs a sparse matrix which is a tappered, approximate
     version of the covariance matrix of a stationary process of autocovariance
@@ -488,12 +485,12 @@ def buildSparseCov2(R,p,N,form=None,taper = 'Wendland2'):
 
     Parameters
     ----------
-    R : numpy array
+    autocorr : numpy array
         input autocovariance functions at each lag (size N)
     p : scalar integer
         number of lags to calculate the tapered approximation of the
         autocoariance function.
-    N : scalar integer
+    n_data : scalar integer
         Size of the complete data vector
     form : character string (or None), optional
         storage format of the sparse matrix (default is None)
@@ -511,28 +508,55 @@ def buildSparseCov2(R,p,N,form=None,taper = 'Wendland2'):
     """
     k = np.array([])
     values = list()
-
-    tap = taperCovariance(np.arange(0,N),p,taper = taper)
-    R_tap = R[0:N]*tap
+    tap = taper_covariance(np.arange(0, n_data), p, taper=taper)
+    r_tap = autocorr[0:n_data] * tap
 
     # calculate the rows and columns indices of the non-zero values
     # Do it diagonal per diagonal
     for i in range(p+1):
-
-        Rf = np.ones(N-i)*R_tap[i]
-        values.append(Rf)
-
-        k = np.hstack((k,i))
-
-
-
+        rf = np.ones(n_data - i) * r_tap[i]
+        values.append(rf)
+        k = np.hstack((k, i))
         # Symmetric values
-        if i!=0 :
-            values.append(Rf)
-            k = np.hstack((k,-i))
+        if i != 0:
+            values.append(rf)
+            k = np.hstack((k, -i))
+    # [build_diagonal(values, r_tap, k, i) for i in range(p + 1)]
+
+    return sparse.diags(values, k.astype(int), format=form, dtype=autocorr.dtype)
 
 
-    return sparse.diags(values, k.astype(int), format=form)
+def build_diagonal(values, r_tap, k_vect, i):
+    """
+    Populate the list of diagonals to feed sparse.diags
+
+    Parameters
+    ----------
+    values : list
+        list of ndarrays which are the diagonals of the covariance matrix
+    r_tap : ndarray
+        autocovariance
+    k_vect : array_like
+        array of diagonal indices
+    i : int
+        index of the diagonal to populate
+
+    Returns
+    -------
+    nothing. append values to values and k_vect
+
+    """
+
+    rf = np.ones(r_tap.shape[0] - i) * r_tap[i]
+    values.append(rf)
+    # k = np.hstack((k_vect, i))
+    np.append(k_vect, i)
+    # Symmetric values
+    if i != 0:
+        values.append(rf)
+        # k = np.hstack((k_vect, -i))
+        np.append(k_vect, -i)
+
 
 # ==============================================================================
 def conjGradImputation(s,A,beta,M,S_2N,R,p,Nit,PCGalgo,tol=1e-7):
@@ -615,9 +639,9 @@ def conjGradImputation(s,A,beta,M,S_2N,R,p,Nit,PCGalgo,tol=1e-7):
 
 
 # ==============================================================================
-def taperCovariance(h,theta,taper = 'Wendland1',tau=10):
+def taper_covariance(h, theta, taper ='Wendland1', tau=10):
     """
-    Function calculating a taper covariance that soothly goes to zero when h
+    Function calculating a taper covariance that smoothly goes to zero when h
     goes to theta. This taper is to be mutiplied by the estimated covariance R
     of the process, to discard correlations larger than theta.
 
@@ -646,62 +670,62 @@ def taperCovariance(h,theta,taper = 'Wendland1',tau=10):
 
     if taper == 'Wendland1' :
 
-        C = np.zeros(len(h))
+        c = np.zeros(len(h))
 
-        C[ii] = (1.-h[ii]/np.float(theta))**4 * (1 + 4.*h[ii]/np.float(theta))
+        c[ii] = (1.-h[ii]/np.float(theta))**4 * (1 + 4.*h[ii]/np.float(theta))
 
     elif taper == 'Wendland2' :
 
-        C = np.zeros(len(h))
+        c = np.zeros(len(h))
 
-        C[ii] = (1-h[ii]/np.float(theta))**6 * (1 + 6.*h[ii]/theta + \
+        c[ii] = (1-h[ii]/np.float(theta))**6 * (1 + 6.*h[ii]/theta + \
         35*h[ii]**2/(3.*theta**2))
 
     elif taper == 'Spherical' :
 
-        C = np.zeros(len(h))
+        c = np.zeros(len(h))
 
-        C[ii] = (1-h[ii]/np.float(theta))**2 * (1 + h[ii]/(2*np.float(theta)) )
+        c[ii] = (1-h[ii]/np.float(theta))**2 * (1 + h[ii]/(2*np.float(theta)) )
 
     elif taper == 'Hanning':
-        C = np.zeros(len(h))
-        C[ii] = (np.hanning(2*theta)[theta:2*theta])**2
-
+        c = np.zeros(len(h))
+        c[ii] = (np.hanning(2*theta)[theta:2*theta])**2
 
     elif taper == 'Gaussian' :
 
-        C = np.zeros(len(h))
+        c = np.zeros(len(h))
         sigma = theta/5.
-        C[ii] = np.sqrt( 1./(2*np.pi*sigma**2) ) * np.exp( - h[ii]**2/(2*sigma**2) )
+        c[ii] = np.sqrt( 1./(2*np.pi*sigma**2) ) * np.exp( - h[ii]**2/(2*sigma**2) )
 
     elif taper == 'rectSmooth':
 
-        C = np.zeros(len(h))
+        c = np.zeros(len(h))
         #tau = np.int(theta/3)
 
 
-        C[h<=theta-tau] = 1.
+        c[h<=theta-tau] = 1.
         jj = np.where( (h>=theta-tau) & (h<=theta) )[0]
-        C[jj] = 0.5*(1 + np.cos( np.pi*(h[jj]-theta+tau)/np.float(tau) ) )
+        c[jj] = 0.5*(1 + np.cos( np.pi*(h[jj]-theta+tau)/np.float(tau) ) )
 
     elif taper == 'modifiedWendland2':
 
-
-        C = np.zeros(len(h))
-
-        C[h<=theta-tau] = 1.
+        c = np.zeros(len(h))
+        c[h<=theta-tau] = 1.
         jj = np.where( (h>=theta-tau) & (h<=theta) )[0]
 
-        C[jj] = (1-(h[jj]-theta+tau)/np.float(tau))**6 * (1 + \
+        c[jj] = (1-(h[jj]-theta+tau)/np.float(tau))**6 * (1 + \
         6.*(h[jj]-theta+tau)/tau + 35*(h[jj]-theta+tau)**2/(3.*tau**2))
 
+    elif taper == 'rect':
 
+        c = np.zeros(len(h))
+        c[h <= theta] = 1.
 
-    return C
+    return c
 
 
 # ==============================================================================
-def computePrecond(R,M,p=10,ptype = 'sparse',taper = 'Wendland2'):
+def computePrecond(R, M, p=10, ptype='sparse', taper='Wendland2', square=True):
     """
     For a given mask and a given PSD function, the function computes the linear
     operator x = C_OO^{-1} b for any vector b, where C_OO is the covariance matrix
@@ -723,6 +747,8 @@ def computePrecond(R,M,p=10,ptype = 'sparse',taper = 'Wendland2'):
         covariance or circulant approximation of the covariance)
     taper : string {'Wendland1','Wendland2','Spherical'}
         name of the taper function. This argument is only used if ptype = 'sparse'
+    square : bool
+        whether to build a square matrix. if False, then
 
     Returns
     -------
@@ -730,7 +756,6 @@ def computePrecond(R,M,p=10,ptype = 'sparse',taper = 'Wendland2'):
         preconditionner operator, calculating P x for all vectors x
 
     """
-
 
     N = len(M)
 
@@ -741,7 +766,7 @@ def computePrecond(R,M,p=10,ptype = 'sparse',taper = 'Wendland2'):
 
     if ptype == 'sparse':
         # Preconditionning : use sparse matrix
-        C = buildSparseCov2(R,p,N,form="csc",taper = taper)
+        C = build_sparse_cov2(R, p, N, form="csc", taper=taper)
         # Calculate the covariance matrix of the observed data
         C_temp = C[:,ind_obs]
         #C_OO = C_temp[ind_obs,:]
@@ -749,7 +774,7 @@ def computePrecond(R,M,p=10,ptype = 'sparse',taper = 'Wendland2'):
         #del C
         # Preconditionner
         #solve =  sparse.linalg.factorized(C_OO)
-        solve =  sparse.linalg.factorized(C_temp[ind_obs,:])
+        solve = sparse.linalg.factorized(C_temp[ind_obs, :])
 
     elif ptype == 'circulant':
 

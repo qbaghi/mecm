@@ -7,6 +7,7 @@
 import numpy as np
 from scipy import interpolate
 from scipy import stats
+from scipy import optimize
 import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
 pyfftw.interfaces.cache.enable()
@@ -154,6 +155,8 @@ def localLinearSmoother(data,f,fj,h,ker='epa',variance=False,ST_given = None):
 
     if ST_given is None:
         ST = np.zeros( (J,3) ) + 1j*np.zeros( (J,3) )
+    else:
+        ST = ST_given[:]
 
     for j in range(J):
 
@@ -180,8 +183,6 @@ def localLinearSmoother(data,f,fj,h,ker='epa',variance=False,ST_given = None):
             ST[j,0] = np.sum(  K  )
             ST[j,1] = np.sum(  K*df1  )
             ST[j,2] = np.sum(  K*df2  )
-        else:
-            ST = ST_given[:]
 
         KY = np.sum(  K*data[ii] )
         XKY = np.sum( K*data[ii]*df1 )
@@ -212,220 +213,60 @@ def localLinearSmoother(data,f,fj,h,ker='epa',variance=False,ST_given = None):
 
     return m_est,b_est,V,sigma2_0,ST
 
-# ==============================================================================
-def localLinearEstimatorFromY(Y,f0,h,ker = 'epa',variance = True,ST_given = None):
-    """
-    Function estimating the power spectral density at frequencies f from a given
-    data log-periodogram Y using a local linear Kernel estimation with bandwidth h
 
-    References :
-    [1] Jianqing Fan and Qiwei Yao, Nonlinear Time Series (2003), p. 284
-    [2] Jianqing Fan and Irene Gijbels, Data-Driven Bandwidth Selection in Local
-    Polynomial Fitting: Variable Bandwidth and Spatial Adaptation Journal of the
-    Royal Statistical Society. Series B (Methodological) Vol. 57, No. 2 (1995),
-    pp. 371-394
+
+
+
+# ==============================================================================
+# The Local Maximum likelihood estimator
+# ==============================================================================
+def localMLEstimator(data,f,fj,h,a0,b0,ker = 'epa',Niter = 1,ST_given = None):
+    """
+    Function computing the local maximum likelihood linear estimation
+    of the input data at points fj, given that the input data are available
+    at points f.
+
 
     Parameters
     ----------
-    Y : 1-D numpy array of size N
-        log-periodogram of the analysed data
-    f0 : 1-D numpy array or scalar
-        vector of frequencies where to estimate the PSD
+    data : array_like
+        Input data array (size N)
+    f : array_like
+        Abscissa correponding to the input data (size N)
+    fj : array_like
+        Abscissa correponding to the output estimate (size J)
     h : array_like
         smoothing parameter vector (size J)
-    wind : character string
-        type of apodization window to apply (hanning or rectangular)
+    a0 : array_like
+        first guess for the local intersects estimate
+    b0 : array_like
+        first guess for the local slopes estimate
     ker : {'epa','ker'}, optional
         Type of smoothing kernel
-    variance : boolean (True or False), optional
-        determines wether to calculate quantities required to estimate the
-        variance of the PSD estimate
-    ST_given : None or scalar (float), optional
-        quantity used in the computation, that only depends on the chosen kernel
-        and smoothing parameter h. It can be already calcualted from a previous
-        computation. Otherwise, leave it as None.
+    variance : boolean, optional
+        If True the estiamated variance of the local linear estimate is provided
+        as an output
+
 
     Returns
     -------
-    S_est : numpy array
-        estimated spectrum (size J)
-    b_est : numpy array
-        estimated bias (size J)
-    V : numpy array
-        normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)
+    m_est : array_like
+        Output estimated smooth function (intersect points, size J)
+    b_est : array_like
+        Output estimated slopes (size J)
+    V : array_like
+        normalized variance of the estimate (size J)
     sigma2_0 : scalar float
         normalized weighted residual sum of squares
+        V * pi^2/6
     ST : array_like
-        quantity used in the computation, that only depends on the chosen kernel,
-        the data size N and smoothing parameter h. It can be used again for
-        another computation involving different data of same size.
+        kernel-dependant quantity that does not depend on the data (may be
+        useful to perform several calculations with the same kernel and data size)
 
     """
 
-    # Data size
-    N = len(Y)
-    # Number of positive frequencies
-    n = np.int((N-1)/2.)
-    # Number of frequencies where to estimate the PSD
-    J = len(f0)
-    # Mean of the logarithm of the Chi squared distribution
-    C0 = -0.57721
-    # The actual quantity to smooth
-    YC = Y - C0
-    # Normalized frequencies (such that Nyquist is 1/2)
-    f_all = np.fft.fftfreq(N)
-    # Strictly positive frequencies
-    f = f_all[1:n+1]
-    # The data to smooth
-    data = YC[1:n+1]
-    # Apply the basical local linear smoother to the data
-    m_est,b_est,V,sigma2_0,ST = localLinearSmoother(data,f,f0,h,ker=ker,
-    variance=variance,ST_given = ST_given)
-
-
-    return np.exp(m_est),b_est,V,sigma2_0,ST
-
-
-# ==============================================================================
-def localLinearEstimatorFromI(I,f,h,ker = 'epa',variance = False,ST_given = None):
-    """
-    Function estimating the power spectral density at frequencies f from the
-    intput periodogram I using a local linear Kernel estimation with bandwidth h
-
-    References :
-    [1] Jianqing Fan and Qiwei Yao, Nonlinear Time Series (2003), p. 284
-    [2] Jianqing Fan and Irene Gijbels, Data-Driven Bandwidth Selection in Local
-    Polynomial Fitting: Variable Bandwidth and Spatial Adaptation Journal of the
-    Royal Statistical Society. Series B (Methodological) Vol. 57, No. 2 (1995),
-    pp. 371-394
-
-    Parameters
-    ----------
-    I : 1-D numpy array of size N
-        periodogram of the analysed data
-    f : 1-D numpy array or scalar
-        frequency
-    h : array_like
-        smoothing parameter vector (size J)
-    wind : character string
-        type of apodization window to apply (hanning or rectangular)
-    ker : {'epa','ker'}, optional
-        Type of smoothing kernel
-    variance : boolean (True or False), optional
-        determines wether to calculate quantities required to estimate the
-        variance of the PSD estimate
-    ST_given : None or scalar (float), optional
-        quantity used in the computation, that only depends on the chosen kernel
-        and smoothing parameter h. It can be already calcualted from a previous
-        computation. Otherwise, leave it as None.
-
-    Returns
-    -------
-    S_est : numpy array
-        estimated spectrum (size J)
-    b_est : numpy array
-        estimated bias (size J)
-    V : numpy array
-        normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)
-    sigma2_0 : scalar float
-        normalized weighted residual sum of squares
-    ST : array_like
-        quantity used in the computation, that only depends on the chosen kernel,
-        the data size N and smoothing parameter h. It can be used again for
-        another computation involving different data of same size.
-
-    """
-
-    Y = np.log(I)
-
-    S_est,b_est,V,sigma2_0,ST = localLinearEstimatorFromY(Y,f,h,ker = ker,
-    variance = variance,ST_given = ST_given)
-
-    return S_est,b_est,V,sigma2_0,ST
-
-
-# ==============================================================================
-def localLinearEstimator(x,f,h,wind = 'hanning',ker = 'epa',variance = True,ST_given = None):
-    """
-    Function estimating the power spectral density at frequencies f from a given
-    data log-periodogram Y using a local linear Kernel estimation with bandwidth h
-
-    References :
-    [1] Jianqing Fan and Qiwei Yao, Nonlinear Time Series (2003), p. 284
-    [2] Jianqing Fan and Irene Gijbels, Data-Driven Bandwidth Selection in Local
-    Polynomial Fitting: Variable Bandwidth and Spatial Adaptation Journal of the
-    Royal Statistical Society. Series B (Methodological) Vol. 57, No. 2 (1995),
-    pp. 371-394
-
-    Parameters
-    ----------
-    x : 1-D numpy array
-        the intput data (time series of size N)
-    f : 1-D numpy array or scalar
-        frequency
-    h : array_like
-        smoothing parameter vector (size J)
-    wind : character string
-        type of apodization window to apply (hanning or rectangular)
-    ker : {'epa','ker'}, optional
-        Type of smoothing kernel
-    variance : boolean (True or False), optional
-        determines wether to calculate quantities required to estimate the
-        variance of the PSD estimate
-    ST_given : None or scalar (float), optional
-        quantity used in the computation, that only depends on the chosen kernel
-        and smoothing parameter h. It can be already calcualted from a previous
-        computation. Otherwise, leave it as None.
-
-    Returns
-    -------
-    S_est : numpy array
-        estimated spectrum (size J)
-    b_est : numpy array
-        estimated bias (size J)
-    V : numpy array
-        normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)
-    sigma2_0 : scalar float
-        normalized weighted residual sum of squares
-    I : array_like
-        periodogram of the input data (size N)
-
-    """
-
-    N = len(x)
-
-
-    J = len(f)
-    # Candidate bandwidths
-    #gh = np.log(h_max/h_min)
-    #h = h_min*np.exp( gh * np.arange(0,J)/(J-1.) )
-
-    # Windowing
-    if wind == 'hanning':
-        w = np.hanning(N)
-    elif wind == 'ones':
-        w = np.ones(N)
-
-    I = np.abs(fft(x*w))**2 / np.sum(w**2)
-
-    S_est,b_est,V,sigma2_0,_ = localLinearEstimatorFromI(I,f,h,ker = ker,variance = variance,ST_given = ST_given)
-
-    return S_est,b_est,V,sigma2_0,I
-
-
-
-# ==============================================================================
-def localMLEstimatorFromI(I,f,h,ker = 'epa',Niter = 1,ST_given = None):
-
-    N = len(I)
-    n = np.int((N-1)/2.)
-    J = len(f)
-
-    S_est,b0,V,sigma2_0,ST = localLinearEstimatorFromI(I,f,h,ker = ker,
-    variance = False,ST_given = ST_given)
-    a0 = np.log(S_est)
-
-    data = I[1:n+1]
+    # Length of the points at wich to estimate the unknown smooth function
+    J = len(fj)
 
     ET = np.zeros( (J,3) ) + 1j*np.zeros( (J,3) )
     a_est = np.zeros( J ) + 1j*np.zeros( J )
@@ -434,9 +275,10 @@ def localMLEstimatorFromI(I,f,h,ker = 'epa',Niter = 1,ST_given = None):
     a_est[:] = a0
     b_est[:] = b0
 
-    f_all = np.fft.fftfreq(N)
-    f_j = f_all[1:n+1]
-
+    if ST_given is None:
+        ST = np.zeros( (J,3) ) + 1j*np.zeros( (J,3) )
+    else:
+        ST = ST_given[:]
 
 
     # Begin maximization of the local likelihood
@@ -449,7 +291,7 @@ def localMLEstimatorFromI(I,f,h,ker = 'epa',Niter = 1,ST_given = None):
             elif ker == 'gauss':
                 b = 10*h[k]
 
-            df = f_j - f[k]
+            df = fj - f[k]
             ii = np.where( np.abs( df ) <= b )[0]
 
             df1 = df[ii]
@@ -465,7 +307,10 @@ def localMLEstimatorFromI(I,f,h,ker = 'epa',Niter = 1,ST_given = None):
             ET[k,1] = np.sum(  KIe *df1  )
             ET[k,2] = np.sum(  KIe *df2  )
 
-
+            if ST_given is None :
+                ST[k,0] = np.sum(  K  )
+                ST[k,1] = np.sum(  K*df1  )
+                ST[k,2] = np.sum(  K*df2  )
 
             L0 = ET[k,0] - ST[k,0]
             L1 = ET[k,1] - ST[k,1]
@@ -477,7 +322,8 @@ def localMLEstimatorFromI(I,f,h,ker = 'epa',Niter = 1,ST_given = None):
             b_est[k] = b_est[k] - ( ET[k,1]*L0 - ET[k,0]*L1 )/denom
 
 
-    return np.exp(a_est),b_est
+    return a_est,b_est
+
 
 
 
@@ -542,33 +388,123 @@ class PSD_estimate:
 
     """
 
-    def __init__(self,N_est,N,Npoints,h_min = None,h_max = None):
+    def __init__(self,N_est,N,Npoints,h_min = None,h_max = None,kind = 'linear',
+        wind = 'hanning',ker = 'epa'):
 
         self.N = N
+        self.f = np.fft.fftfreq(N)
+        n = np.int((N-1)/2.)
         # Frequency vector where to estimate the PSD
         self.N_est = N_est
-        self.f_est = np.zeros(N_est+1)
 
-        self.f_est[1:N_est+1] = 1./Npoints * np.exp( np.log(Npoints/2.)*np.arange(0,N_est)/(N_est-1))
+        # Interpolation type
+        self.kind = kind
+        # Possible windowing of the periodogram
+        self.wind = wind
+        if wind == 'hanning':
+            self.w = np.hanning(N)
+            self.s2 = np.sum(self.w**2)
+        elif wind == 'ones':
+            self.w = np.ones(N)
+            self.s2 = N
+        # Mean of the logarithm of the Chi squared distribution
+        self.C0 = -0.57721
+
         # Initialize the bandwidths parameters of the PSD estimate
         if h_min is None:
             h_min = 3./self.N
         if h_max is None:
             h_max = 0.05
 
-        J = len(self.f_est)
-        gh = np.log(h_max/h_min)
-        self.h = h_min*np.exp( gh * np.arange(0,J)/(J-1.) )
+        # self.f_est = 1./Npoints * np.exp( np.log(Npoints/2.)*np.arange(0,N_est)/(N_est-1))
+        # gh = np.log(h_max/h_min)
+        # self.h = h_min*np.exp( gh * np.arange(0,N_est)/(N_est-1.) )
 
-        self.PSD_function = None
-        self.I = None
-        self.S_est = None
+        # Test another method
+        self.f_est = self.choose_knots(N_est,1.0/Npoints,1.0/2.)
+        self.h = self.choose_knots(N_est,h_min,h_max)
 
-        self.ST,self.V = self.calculateST(self.f_est,self.h,N)
 
-        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],self.V[self.f_est>0]*np.pi**2/6.)
+        #self.PSD_function = None
+        self.logf_est = np.log(self.f_est)
+        self.logf = np.log(self.f[1:n+1])
+        self.logPSD_function = None
+        self.m_est = None
+        self.ker = ker
+        self.ST,self.V = self.calculateST(self.f_est,self.h,N,ker = ker)
+        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
+        self.V[self.f_est>0]*np.pi**2/6.,kind = self.kind)
 
-    def estimate(self,x,w='hanning',periodogram=False,variance = False,kind='linear'):
+    def choose_knots(self,J,fmin,fmax):
+        """
+
+        Choose frequency knots such that
+
+        f_knots = 10^-n_knots
+
+        where the difference
+        n_knots[j+1] - n_knots[j] = dn[j]
+
+        is a geometric series.
+
+        Parameters
+        ----------
+        J : scalar integer
+            number of knots
+        fmin : scalar float
+            minimum frequency knot
+        fmax : scalar float
+            maximum frequency knot
+
+
+        """
+
+        ns = - np.log(fmax)/np.log(10)
+        n0 = - np.log(fmin)/np.log(10) #6
+        jvect = np.arange(0,J)
+        #b = (dn_f - dn_0)/(J-1)
+        #n_knots = n0 - dn_0*jvect + jvect*(jvect-1)/2.*b
+        alpha_guess = 0.8
+
+        targetfunc = lambda x : n0 - (1-x**(J))/(1-x) - ns
+        result = optimize.fsolve(targetfunc, alpha_guess)
+        alpha = result[0]
+        n_knots = n0 - (1-alpha**jvect)/(1-alpha)
+        #f_knots = 10**(-n_knots[0:J-1])
+        f_knots = 10**(-n_knots)
+
+        # Force the first and last knots
+        f_knots[0] = fmin
+        f_knots[J-1] = fmax
+
+        return f_knots
+
+
+    def compute_periodogram(self,x):
+        """
+        Compute the windowed periodogram from time series x,
+        along with Fourier frequency grid
+        """
+        # If size of analysed data is the same as the presets
+        if (x.shape[0] == self.N):
+            if self.wind == 'hanning':
+                # Compute periodogram
+                I = np.abs(fft(x*self.w))**2 / self.s2
+            elif self.wind == 'ones':
+                I = np.abs(fft(x))**2 / self.s2
+        else:
+            if self.wind == 'hanning':
+                w = np.hanning(x.shape[0])
+                s2 = np.sum(w**2)
+                I = np.abs(fft(x*w))**2 / s2
+            elif self.wind == 'ones':
+                s2 = x.shape[0]
+                I = np.abs(fft(x))**2 / s2
+
+        return I
+
+
+    def estimate(self,x,variance = False):
         """
         method computing the PSD estimate of the input data x at frequencies
         fj contained in f_est, using the local least-squares technique
@@ -582,28 +518,19 @@ class PSD_estimate:
             Input data array (size N)
         w : characted string
             type of apodization window to apply
-        periodogram : boolean
-            if True, the periodogram is stored in the attribute "I"
         variance : boolean
             if True, compute an estimate of the variance of the PSD estimator
-        kind : string
-            Specifies the kind of interpolation
 
         """
-        # Estimation of the PSD function
-        self.S_est,b_est,V_est,sigma2_0_est,I=localLinearEstimator(x,self.f_est,
-        self.h,wind=w,variance = variance,ST_given = self.ST)
-        # Calcualte the interpolation function
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
-        kind = kind)
-        if variance:
-            self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
-            V_est[self.f_est>0]*np.pi**2/6.,kind=kind)
+        # # Estimation of the PSD function
+        # self.S_est,b_est,V_est,sigma2_0_est,I=localLinearEstimator(x,self.f_est,
+        # self.h,wind=w,variance = variance,ST_given = self.ST)
+        # Compute periodogram
+        I = self.compute_periodogram(x)
+        # Compute log-psd estimate from periodogram
+        self.estimateFromI(I,variance = variance)
 
-        if periodogram:
-            self.I = I
-
-    def estimateFromI(self,I,variance = False,kind='linear'):
+    def estimateFromI(self,I,variance = False):
         """
         method computing the PSD estimate from the values of the input
         periodogram I. Calculate or update the values of the attributes S_est,
@@ -624,16 +551,43 @@ class PSD_estimate:
 
 
         # Estimation of the PSD function
-        self.S_est,b_est,V_est,sigma2_0_est,_=localLinearEstimatorFromI(I,
-        self.f_est,self.h,variance = variance,ST_given = self.ST)
-        # Calcualte the interpolation function
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
-        kind = kind)
-        if variance:
-            self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
-            V_est[self.f_est>0]*np.pi**2/6.,kind=kind)
+        # self.S_est,b_est,V_est,sigma2_0_est,_=localLinearEstimatorFromI(I,
+        # self.f_est,self.h,variance = variance,ST_given = self.ST)
 
-    def MLestimateFromI(self,I,Niter = 1):
+        # Compute Fourier grid
+        if (I.shape[0] == self.N) :
+            f = self.f[:]
+        else:
+            f = np.fft.fftfreq(I.shape[0])
+        n = np.int((I.shape[0]-1)/2.)
+
+        # Estimate log-psd
+        self.m_est,b_est,V,sigma2_0,ST = localLinearSmoother(np.log(I[1:n+1])-self.C0,
+        f[1:n+1],self.f_est,self.h,ker=self.ker,
+        variance=variance,ST_given = self.ST)
+
+        # # Calculate the interpolation function
+        # self.PSD_function = interpolate.interp1d(np.log(self.f_est),np.log(self.S_est),
+        # kind = self.kind,fill_value = 'extrapolate')
+        # Calcualte the interpolation function
+        self.logPSD_function = interpolate.interp1d(self.logf_est,self.m_est,
+        kind = self.kind,fill_value = "extrapolate")
+
+        if variance:
+            self.PSD_variance_function = interpolate.interp1d(self.logf_est,
+            V_est[self.f_est>0]*np.pi**2/6.,kind=self.kind,fill_value = 'extrapolate')
+
+        # Interpolate the PSD itself, not the log-psd
+        # self.PSD_function = interpolate.interp1d(self.f_est,self.S_est,
+        # kind = self.kind)
+        # if variance:
+        #     # Interpolate the variance of the log-PSD
+        #     var = V_est[self.f_est>0]*np.pi**2/6.
+        #     self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
+        #     np.exp(2*self.S_est + var)*(np.exp(var)-1),
+        #     kind=self.kind)
+
+    def MLestimateFromI(self,I,Niter = 1,variance = False):
         """
         method computing the PSD estimate from the input periodogram I at
         frequencies fj contained in f_est, using the local maximum likelihood
@@ -650,13 +604,44 @@ class PSD_estimate:
             the maximum likelihood estimate.
 
         """
-        # Estimation of the PSD function
-        self.S_est,b_est = localMLEstimatorFromI(I,self.f_est,self.h,Niter = Niter,ST_given = self.ST)
+
+        # Compute Fourier grid
+        if (I.shape[0] == self.N) :
+            f = self.f[:]
+        else:
+            f = np.fft.fftfreq(I.shape[0])
+        n = np.int((I.shape[0]-1)/2.)
+
+        # First estimate log-psd using least-square estimator
+        a_est,b_est,V,sigma2_0,ST = localLinearSmoother(np.log(I[1:n+1])-self.C0,
+        f[1:n+1],self.f_est,self.h,ker=self.ker,
+        variance=variance,ST_given = self.ST)
+        # Refine estimate using maximum likelihood
+        self.m_est,b_est = localMLEstimator(I[1:n+1],f[1:n+1],self.f_est,
+        self.h,a_est,b_est,ker = self.ker,Niter = Niter,ST_given = self.ST)
+
+
+
+        # # Estimation of the PSD function
+        # self.S_est,b_est = localMLEstimatorFromI(I,self.f_est,self.h,Niter = Niter,
+        # ST_given = self.ST)
+        # # Calcualte the interpolation function
+        # self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
+        # kind=self.kind)
         # Calcualte the interpolation function
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est))
+        self.logPSD_function = interpolate.interp1d(self.logf,
+        self.m_est,kind = self.kind,fill_value = "extrapolate")
+        # Interpolate the PSD itself, not the log-psd
+        # self.PSD_function = interpolate.interp1d(self.f_est,self.S_est,
+        # kind = self.kind)
+
+        if variance:
+            # Calcualte the variance interpolation function
+            self.logPSD_function = interpolate.interp1d(self.logf,
+            V_est*np.pi**2/6.,kind = self.kind,fill_value = "extrapolate")
         #self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],V_est[self.f_est>0]*np.pi**2/6.)
 
-    def MLestimate(self,x,w='hanning',Niter = 1):
+    def MLestimate(self,x,Niter = 1,variance = False):
         """
         method computing the PSD estimate of the input data x at frequencies
         fj contained in f_est, using the local maximum likelihood technique.
@@ -675,37 +660,9 @@ class PSD_estimate:
 
         """
         # Compute the periodogram
-        I = periodogram(x,len(x),wind = w)
+        I = self.compute_periodogram(x)
         # Compute local maximum likelihood estimator
-        self.MLestimateFromI(I,Niter = Niter)
-
-    def conditionalEstimate(self,condDraws,wind='hanning'):
-
-        (Nd,N) = np.shape(condDraws)
-
-        # Initialization of the conditional mean of the periodogram if necessary
-        S_est_mat= np.zeros((Nd,N))
-
-
-        for i in range(Nd):
-
-            # Estimation of the PSD function
-            S_est_mat[i,:],b_est,V_est,sigma2_0_est,I=localLinearEstimator(condDraws[i,:],self.f_est,self.h,wind=wind,ST_given = ST)
-
-        # Calcualte the average
-        S_est_mean = np.mean(S_est_mat,axis=0)
-        # Store the value of S_est
-        self.S_est = S_est_mean
-
-        # Calcualte the interpolation function
-        f = np.fft.fftfreq(N)
-        n = np.int( (N-1)/2.)
-
-        self.PSD_function = interpolate.interp1d(self.f_est,np.log(S_est_mean))
-        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],V_est[self.f_est>0]*np.pi**2/6.)
-
-        self.S_est = S_est_mean
-
+        self.MLestimateFromI(I,Niter = Niter,variance = variance)
 
 
     def calculate(self,arg):
@@ -735,23 +692,36 @@ class PSD_estimate:
             N = arg
             f = np.fft.fftfreq(N)
             n = np.int( (N-1)/2.)
-            m_est_interp_N = self.PSD_function(f[0:n+1])
+
+
             # Symmetrize the estimates
-            SN = np.exp(m_est_interp_N[1:n+1])
-            S_est_N_sym = symmetrize(np.real(SN),N)
-            # Take the exponential value
-            S_est_N_sym[0] = np.exp(np.real(m_est_interp_N[0]))
+            if (N % 2 == 0): # if N is even
+                # Compute PSD from f=fs/N to f = fs/2
+                fS = np.concatenate(([f[1]/10.],np.abs(f[1:n+2])))
+                S = np.real( np.exp( self.logPSD_function(np.log(fS)) ) )
+                SN_sym = np.concatenate((S[0:n+1],S[1:n+2][::-1]))
+
+            else: # if N is odd
+                fS = np.concatenate(([f[1]/10.],np.abs(f[1:n+1])))
+                S = np.real( np.exp( self.logPSD_function(np.log(np.abs(fS))) ) )
+                SN_sym = np.concatenate((S[0:n+1],S[1:n+1][::-1]))
+
+            # Symmetrize the estimates
+            # S = np.concatenate( ( [S0] ,
+            # np.exp( np.real(self.logPSD_function(np.log(f[1:n+1])) )) ))
+            # SN_sym = symmetrize(S[1:n+1],N)
+            # SN_sym[0] = S0
 
         elif type(arg) == np.ndarray:
             f = arg[:]
-            m_est_interp = self.PSD_function(f)
-            S_est_N_sym = np.exp(m_est_interp)
+            SN_sym = np.real( np.exp(self.logPSD_function(np.log(np.abs(f)))) )
+            #S_est_N_sym = np.real(self.PSD_function(f))
 
         else:
             raise TypeError("Argument must be integer or ndarray")
 
 
-        return S_est_N_sym
+        return SN_sym
 
     def calculateVariance(self,arg):
         """

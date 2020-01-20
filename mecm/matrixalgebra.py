@@ -23,6 +23,88 @@ from timeit import repeat
 # jit decorator tells Numba to compile this function.
 # The argument types will be inferred by Numba when function is called.
 #@jit#(nopython=True, nogil=True)
+
+
+class PCG:
+
+    def __init__(self, a_func, nit, stp, precond):
+
+        self.a_func = a_func
+        self.precond = precond
+
+        self.nit = nit
+        self.stp = stp
+
+        # Initialization of residual vector
+        self.sr = np.zeros(nit + 1)
+        self.k = 0
+        # Intialization of the solution
+        self.b_norm = 1
+        self.x = 0
+        self.k = 0
+        self.p = []
+        self.z = []
+
+    def initialize(self, x0, b):
+
+        # Initialization of residual vector
+        self.sr = np.zeros(self.nit + 1)
+        # sz = np.zeros(Nit+1)
+        self.k = 0
+
+        # Intialization of the solution
+        self.b_norm = LA.norm(b)
+        self.x = x0
+        self.r = b - self.a_func(x0)
+        self.z_hat = self.precond(self.r)
+        self.z = self.z_hat[:]
+        self.p = np.zeros(len(self.r))
+        self.p[:] = self.z
+        self.sr[0] = LA.norm(self.r)
+
+    def pcg_update(self, verbose=False):
+
+        ap = self.a_func(self.p)
+        q = self.precond(ap)
+        a = np.sum(np.conj(self.z) * self.z_hat) / np.sum(np.conj(q) * self.z_hat)
+
+        x_12 = self.x + a * self.p
+        r_12 = self.r - a * ap
+        z_12 = self.z - a * q
+
+        az_12 = self.a_func(z_12)
+        s_12 = self.precond(az_12)
+
+        w = np.sum(np.conj(z_12) * s_12) / np.sum(np.conj(s_12) * s_12)
+
+        self.x = x_12 + w * z_12
+        self.r = r_12 - w * az_12
+        z_new = z_12 - w * s_12
+
+        b = a / w * np.sum(np.conj(z_new) * self.z_hat) / np.sum(np.conj(self.z) * self.z_hat)
+
+        self.p = z_new + b * (self.p - w * q)
+
+        self.z[:] = z_new
+        self.sr[self.k + 1] = LA.norm(self.r)
+
+        # increment
+        self.k = self.k + 1
+
+        if verbose:
+            if self.k % 20 == 0:
+                print('PCG Iteration ' + str(self.k) + ' completed')
+                print('Residuals = ' + str(self.sr[self.k]) + ' compared to criterion = '+str(self.stp*self.b_norm))
+
+    def solve(self, x0, b, verbose=False):
+
+        self.initialize(self, x0, b)
+
+        [self.pcg_update(verbose=verbose) for k in range(self.nit)]
+
+        return self.x, self.sr
+
+
 def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
     """
     Function solving the linear system
@@ -82,14 +164,14 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
 
 
     # Iteration
-    while ( (k<Nit) & (sr[k]>stp*b_norm) ):
+    while (k<Nit) & (sr[k]>stp*b_norm):
 
         # Ap_k-1
         Ap = A_func(p)
         # Mq_k-1=Ap_k-1
         q = P(Ap)
 
-        a = np.sum( np.conj(z)*z_hat ) / np.sum( np.conj(q)*z_hat )
+        a = np.sum(np.conj(z)*z_hat) / np.sum(np.conj(q)*z_hat)
 
         x_12 = x + a*p
         r_12 = r - a*Ap
@@ -98,7 +180,7 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
         Az_12 = A_func(z_12)
         s_12 = P(Az_12)
 
-        w = np.sum( np.conj(z_12)*s_12 ) / np.sum( np.conj(s_12)*s_12 )
+        w = np.sum(np.conj(z_12)*s_12) / np.sum( np.conj(s_12)*s_12)
 
         x = x_12 + w*z_12
         r = r_12 - w*Az_12

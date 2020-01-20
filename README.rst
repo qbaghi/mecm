@@ -106,7 +106,7 @@ To begin with, we generate some simple time series which contains noise and sign
 To generate the noise, we start with a white, zero-mean Gaussian noise that
 we then filter to obtain a stationary colored noise:
 
-.. code-block::
+```python
 
   # Import mecm and other useful packages
   import mecm
@@ -121,6 +121,8 @@ we then filter to obtain a stationary colored noise:
   r = 0.01
   b, a = signal.butter(3, 0.1/0.5, btype='high', analog=False)
   n = signal.lfilter(b,a, noise, axis=-1, zi=None) + noise*r
+
+```
 
 Then we need a deterministic signal to add. We choose a sinusoid with some
 frequency f0 and amplitude a0:
