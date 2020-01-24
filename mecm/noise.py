@@ -10,7 +10,7 @@ from pyfftw.interfaces.numpy_fft import fft, ifft
 pyfftw.interfaces.cache.enable()
 
 
-def symmetrize(values,N_DSP) :
+def symmetrize(values, N_DSP):
     """
     Function returning the full symmetrized noise DSP in UNIT/sqrt(Hz)
     from DSP values ranging from fe/N_DSP to fe where :
@@ -140,10 +140,10 @@ def symmetrize_shift(values,N,fe) :
 
 def generateFreqNoiseFromDSP(DSP, fe, myseed=None):
     """
-    Generate noise in the frequency domain from the values of the DSP. 
+    Generate noise in the frequency domain from the values of the DSP.
     """
- 
-    
+
+
     """
     Function generating a colored noise from a vector containing the DSP.
     The DSP contains Np points such that Np > 2N and the output noise should
@@ -200,11 +200,11 @@ def generateFreqNoiseFromDSP(DSP, fe, myseed=None):
     else :
 
         # Noise_TF = np.hstack( (Noise_TF, Noise_sym[::-1]) )
-        Noise_TF = np.hstack( (Noise_TF, np.conj(Noise_TF[1:N_fft+1])[::-1]) )    
-        
+        Noise_TF = np.hstack( (Noise_TF, np.conj(Noise_TF[1:N_fft+1])[::-1]) )
+
     return np.sqrt(N_DSP*fe/2.) * Noise_TF
-    
-    
+
+
 
 def generateNoiseFromDSP(DSP, fe, myseed=None) :
     """
@@ -247,6 +247,3 @@ def generateNoiseFromDSP(DSP, fe, myseed=None) :
 
     #return b[N_DSP/2:N_DSP/2+N]*np.sqrt(np.var(b)/np.var(b[N_DSP/2:N_DSP/2+N])),S
     return ifft(generateFreqNoiseFromDSP(DSP,fe,myseed = myseed))#,S,Noise_TF#*np.sqrt(np.var(b)/np.var(b[0:N])),S
-
-
-

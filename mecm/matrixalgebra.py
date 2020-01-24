@@ -217,7 +217,7 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
 #@jit('void(float64[:,:], float64[:], float64[:,:],float64[:](float64[:]),float64)', nopython=True, nogil=True)
 #@jit(nopython=True, nogil=True)
 #@jit(nogil=True)
-def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,PCGalgo):
+def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,pcg_algo):
     """
     Inner function of the multithreading process.
     This is used to solve the linear system
@@ -252,32 +252,32 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,PCGalgo):
 
     """
 
-    if PCGalgo == 'mine':
+    if pcg_algo == 'mine':
         for k in range(result.shape[1]):
             # With my code:
             result[:,k],sr = precondBiCGSTAB(x0,B[:,k],A_func,Nit,stp,P)
             print("PCG complete for parameter "+str(k))
 
 
-    elif 'scipy' in PCGalgo:
+    elif 'scipy' in pcg_algo:
         for k in range(result.shape[1]):
             tol_eff = np.min([stp,stp*LA.norm(B[:,k])])
-            if (PCGalgo == 'scipy') | (PCGalgo == 'scipy.bicgstab'):
+            if (pcg_algo == 'scipy') | (pcg_algo == 'scipy.bicgstab'):
                 result[:,k],info = sparse.linalg.bicgstab(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P,callback=None)
-            elif (PCGalgo == 'scipy.bicg'):
+            elif (pcg_algo == 'scipy.bicg'):
                 result[:,k],info = sparse.linalg.bicg(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P,callback=None)
-            elif (PCGalgo == 'scipy.cg'):
+            elif (pcg_algo == 'scipy.cg'):
                 result[:,k],info = sparse.linalg.cg(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P,callback=None)
-            elif (PCGalgo == 'scipy.cgs'):
+            elif (pcg_algo == 'scipy.cgs'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P,callback=None)
-            elif (PCGalgo == 'scipy.gmres'):
+            elif (pcg_algo == 'scipy.gmres'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P)
-            elif (PCGalgo == 'scipy.lgmres'):
+            elif (pcg_algo == 'scipy.lgmres'):
                 result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
                 tol=tol_eff,maxiter=Nit,M=P)
             else:
@@ -351,7 +351,7 @@ def make_multithread(inner_func, numthreads):
     return func_mt
 
 
-def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,PCGalgo = 'scipy', nthreads=4):
+def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,pcg_algo = 'scipy', nthreads=4):
     """
     Function that solves the linear system
     X = A^-1 B where B is a matrix, by applying the preconditioned stabilized
@@ -389,11 +389,11 @@ def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,PCGalgo = 'scipy', nthreads=4):
 
     if nthreads > 1 :
         func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB, nthreads)
-        res = func_PrecondBiCGSTAB_mt(x0,B,A_func,Nit,stp,P,PCGalgo)
+        res = func_PrecondBiCGSTAB_mt(x0,B,A_func,Nit,stp,P,pcg_algo)
 
     elif nthreads == 1 :
         res = np.empty((len(x0),B.shape[1]),dtype=np.float64)
-        innerPrecondBiCGSTAB(res,x0,B,A_func,Nit,stp,P,PCGalgo)
+        innerPrecondBiCGSTAB(res,x0,B,A_func,Nit,stp,P,pcg_algo)
 
 
     return res
@@ -553,10 +553,10 @@ def precondLinearOp(solver,N_out,N_in):
     return P_op
 
 
-def PCGsolve(ind_obs,M,S_2N,b,x0,tol,maxiter,Psolver,PCGalgo):
+def pcg_solve(ind_obs, M, S_2N, b, x0, tol, maxiter, Psolver, pcg_algo):
     """
-    Function that solves the problem Ax = b by calling iterative algorithms, using
-    user-specified methods.
+    Function that solves the problem Ax = b by calling iterative algorithms,
+    using user-specified methods.
     Where A can be written as A = W_o F* D F W_o^T
 
     Parameters
@@ -577,7 +577,7 @@ def PCGsolve(ind_obs,M,S_2N,b,x0,tol,maxiter,Psolver,PCGalgo):
     Psolver : sparse.linalg.factorized instance
         preconditionner matrix: linear operator which calculates an approximation
         of the solution: u_approx = C_OO^{-1} b for any vector b
-    PCGalgo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}
+    pcg_algo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}
         Type of preconditioned conjugate gradient (PCG) algorithm to use among
 
 
@@ -591,26 +591,26 @@ def PCGsolve(ind_obs,M,S_2N,b,x0,tol,maxiter,Psolver,PCGalgo):
     N_o = len(ind_obs)
     #x0 = np.zeros(N_o)
 
-    if PCGalgo == 'mine':
+    if pcg_algo == 'mine':
         Coo_func = lambda x: matVectProd(x,ind_obs,ind_obs,M,S_2N)
         u,sr = precondBiCGSTAB(x0,b,Coo_func,maxiter,tol,Psolver)
-    elif 'scipy' in PCGalgo:
+    elif 'scipy' in pcg_algo:
         Coo_op = covLinearOp(ind_obs,ind_obs,M,S_2N)
         P_op = precondLinearOp(Psolver,N_o,N_o)
         tol_eff = np.min([tol,tol*LA.norm(b)])
-        if (PCGalgo == 'scipy') | (PCGalgo == 'scipy.bicgstab'):
+        if (pcg_algo == 'scipy') | (pcg_algo == 'scipy.bicgstab'):
             u,info = sparse.linalg.bicgstab(Coo_op, b, x0=x0,
             tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
-        elif (PCGalgo == 'scipy.bicg'):
+        elif (pcg_algo == 'scipy.bicg'):
             u,info = sparse.linalg.bicg(Coo_op, b, x0=x0,
             tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
-        elif (PCGalgo == 'scipy.cg'):
+        elif (pcg_algo == 'scipy.cg'):
             u,info = sparse.linalg.cg(Coo_op, b, x0=x0,
             tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
-        elif (PCGalgo == 'scipy.cgs'):
+        elif (pcg_algo == 'scipy.cgs'):
             u,info = sparse.linalg.cgs(Coo_op, b, x0=x0,
             tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
             printPCGstatus(info)
