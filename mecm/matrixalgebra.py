@@ -49,7 +49,7 @@ class PCG:
 
         # Initialization of residual vector
         self.sr = np.zeros(self.nit + 1)
-        # sz = np.zeros(Nit+1)
+        # sz = np.zeros(n_it+1)
         self.k = 0
 
         # Intialization of the solution
@@ -105,7 +105,7 @@ class PCG:
         return self.x, self.sr
 
 
-def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
+def precondBiCGSTAB(x0,b,A_func,n_it,stp,P,z0_hat = None,verbose=True):
     """
     Function solving the linear system
     x = A^-1 b
@@ -120,7 +120,7 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
         observed vector (right hand side of the system)
     A_func: linear operator
         linear function of a vector x calculating A*x
-    Nit : scalar integer
+    n_it : scalar integer
         number of maximal iterations
     stp : scalar float
         stp: stopping criteria
@@ -139,8 +139,8 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
     # Default first guess
     #z0_hat = None
     # Initialization of residual vector
-    sr = np.zeros(Nit+1)
-    #sz = np.zeros(Nit+1)
+    sr = np.zeros(n_it+1)
+    #sz = np.zeros(n_it+1)
     k=0
 
     # Intialization of the solution
@@ -164,7 +164,7 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
 
 
     # Iteration
-    while (k<Nit) & (sr[k]>stp*b_norm):
+    while (k<n_it) & (sr[k]>stp*b_norm):
 
         # Ap_k-1
         Ap = A_func(p)
@@ -217,7 +217,7 @@ def precondBiCGSTAB(x0,b,A_func,Nit,stp,P,z0_hat = None,verbose=True):
 #@jit('void(float64[:,:], float64[:], float64[:,:],float64[:](float64[:]),float64)', nopython=True, nogil=True)
 #@jit(nopython=True, nogil=True)
 #@jit(nogil=True)
-def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,pcg_algo):
+def innerPrecondBiCGSTAB(result,x0,B,A_func,n_it,stp,P,pcg_algo):
     """
     Inner function of the multithreading process.
     This is used to solve the linear system
@@ -235,7 +235,7 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,pcg_algo):
         Matrix of observed vectors (right hand side of the system)
     A_func: linear operator
         linear function of a vector x calculating A*x
-    Nit : scalar integer
+    n_it : scalar integer
         number of maximal iterations
     stp : scalar float
         stp: stopping criteria
@@ -243,7 +243,6 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,pcg_algo):
         preconditionner operator, calculating Px for all vectors x
     z0_hat : array_like (size N)
         first guess for solution, optional (default is None)
-
 
 
     Returns
@@ -255,54 +254,69 @@ def innerPrecondBiCGSTAB(result,x0,B,A_func,Nit,stp,P,pcg_algo):
     if pcg_algo == 'mine':
         for k in range(result.shape[1]):
             # With my code:
-            result[:,k],sr = precondBiCGSTAB(x0,B[:,k],A_func,Nit,stp,P)
+            result[:,k],sr = precondBiCGSTAB(x0,B[:,k],A_func,n_it,stp,P)
             print("PCG complete for parameter "+str(k))
-
 
     elif 'scipy' in pcg_algo:
         for k in range(result.shape[1]):
-            tol_eff = np.min([stp,stp*LA.norm(B[:,k])])
+            tol_eff = np.min([stp, stp*LA.norm(B[:,k])])
             if (pcg_algo == 'scipy') | (pcg_algo == 'scipy.bicgstab'):
-                result[:,k],info = sparse.linalg.bicgstab(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P,callback=None)
+                result[:, k], info = sparse.linalg.bicgstab(A_func, B[:, k],
+                                                            x0=x0,
+                                                            tol=tol_eff,
+                                                            maxiter=n_it,
+                                                            M=P,
+                                                            callback=None)
             elif (pcg_algo == 'scipy.bicg'):
-                result[:,k],info = sparse.linalg.bicg(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P,callback=None)
+                result[:, k], info = sparse.linalg.bicg(A_func, B[:, k],
+                                                        x0=x0,
+                                                        tol=tol_eff,
+                                                        maxiter=n_it,
+                                                        M=P,
+                                                        callback=None)
             elif (pcg_algo == 'scipy.cg'):
-                result[:,k],info = sparse.linalg.cg(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P,callback=None)
+                result[:, k], info = sparse.linalg.cg(A_func, B[:, k], x0=x0,
+                                                      tol=tol_eff,
+                                                      maxiter=n_it,
+                                                      M=P,
+                                                      callback=None)
             elif (pcg_algo == 'scipy.cgs'):
-                result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P,callback=None)
+                result[:, k], info = sparse.linalg.cgs(A_func, B[:, k], x0=x0,
+                                                       tol=tol_eff,
+                                                       maxiter=n_it,
+                                                       M=P,
+                                                       callback=None)
             elif (pcg_algo == 'scipy.gmres'):
-                result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P)
+                result[:, k], info = sparse.linalg.cgs(A_func, B[:, k], x0=x0,
+                                                       tol=tol_eff,
+                                                       maxiter=n_it,
+                                                       M=P)
             elif (pcg_algo == 'scipy.lgmres'):
-                result[:,k],info = sparse.linalg.cgs(A_func, B[:,k], x0=x0,
-                tol=tol_eff,maxiter=Nit,M=P)
+                result[:, k], info = sparse.linalg.cgs(A_func,
+                                                       B[:, k],
+                                                       x0=x0,
+                                                       tol=tol_eff,
+                                                       maxiter=n_it,
+                                                       M=P)
             else:
                 raise ValueError("Unknown PCG algorithm name")
             print("PCG complete for parameter "+str(k) + ", with exit status:")
-            printPCGstatus(info)
+            print_pcg_status(info)
             print("Value of || A * x - b ||/||b|| at exit:")
-            print(str(LA.norm(result[:,k]-B[:,k])/LA.norm(B[:,k])))
+            print(str(LA.norm(result[:, k]-B[:, k])/LA.norm(B[:, k])))
 
 
-
-
-
-
-def printPCGstatus(info):
+def print_pcg_status(info):
     """
     Function that takes the status result of the scipy.sparse.linalg.bicgstab
     algorithm and print it in an understandable way.
     """
     if info == 0:
         print("successful exit!")
-    elif info>0 :
+    elif info > 0:
         print("convergence to tolerance not achieved")
         print("number of iterations: " + str(info))
-    elif info<0 :
+    elif info < 0:
         print("illegal input or breakdown.")
 
 
@@ -336,7 +350,7 @@ def make_multithread(inner_func, numthreads):
 
         chunklen = (length + numthreads - 1) // numthreads
         # Create argument tuples for each input chunk
-        # arguments are x0,B,A_func,Nit,stp,P we only change B
+        # arguments are x0,B,A_func,n_it,stp,P we only change B
         chunks = [[result[:,i * chunklen:(i + 1) * chunklen],args[0],
         args[1][:,i * chunklen:(i + 1) * chunklen],args[2],
         args[3],args[4],args[5],args[6]] for i in range(numthreads)]
@@ -351,7 +365,7 @@ def make_multithread(inner_func, numthreads):
     return func_mt
 
 
-def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,pcg_algo = 'scipy', nthreads=4):
+def matPrecondBiCGSTAB(x0,B,A_func,n_it,stp,P,pcg_algo = 'scipy', nthreads=4):
     """
     Function that solves the linear system
     X = A^-1 B where B is a matrix, by applying the preconditioned stabilized
@@ -369,7 +383,7 @@ def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,pcg_algo = 'scipy', nthreads=4):
         Matrix of observed vectors (right hand side of the system)
     A_func: linear operator
         linear function of a vector x calculating A*x
-    Nit : scalar integer
+    n_it : scalar integer
         number of maximal iterations
     stp : scalar float
         stp: stopping criteria
@@ -389,11 +403,11 @@ def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,pcg_algo = 'scipy', nthreads=4):
 
     if nthreads > 1 :
         func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB, nthreads)
-        res = func_PrecondBiCGSTAB_mt(x0,B,A_func,Nit,stp,P,pcg_algo)
+        res = func_PrecondBiCGSTAB_mt(x0,B,A_func,n_it,stp,P,pcg_algo)
 
     elif nthreads == 1 :
         res = np.empty((len(x0),B.shape[1]),dtype=np.float64)
-        innerPrecondBiCGSTAB(res,x0,B,A_func,Nit,stp,P,pcg_algo)
+        innerPrecondBiCGSTAB(res,x0,B,A_func,n_it,stp,P,pcg_algo)
 
 
     return res
@@ -401,7 +415,7 @@ def matPrecondBiCGSTAB(x0,B,A_func,Nit,stp,P,pcg_algo = 'scipy', nthreads=4):
 
 
 # ==============================================================================
-def matVectProd(y_in,ind_in,ind_out,M,S_2N):
+def mat_vect_prod(y_in,ind_in,ind_out,M,s_2n):
     """
     Linear operator that calculate Com y_in assuming that we can write:
 
@@ -421,7 +435,7 @@ def matVectProd(y_in,ind_in,ind_out,M,S_2N):
         mask vector (with entries equal to 0 or 1)
     N : scalar integer
         Size of the complete data vector
-    S_2N : numpy array (size P >= 2N)
+    s_2n : numpy array (size P >= 2N)
         PSD vector
 
 
@@ -437,13 +451,13 @@ def matVectProd(y_in,ind_in,ind_out,M,S_2N):
     y = np.zeros(len(M)) #+ 1j*np.zeros(N)
     y[ind_in] = y_in
 
-    N_fft = len(S_2N)
+    N_fft = len(s_2n)
 
-    #return np.real( ifft( S_2N * fft(M*y,N_fft) )[ind_out] )
-    return np.real( ifft( S_2N * fft(y,N_fft) )[ind_out] )
+    #return np.real( ifft( s_2n * fft(M*y,N_fft) )[ind_out] )
+    return np.real( ifft( s_2n * fft(y,N_fft) )[ind_out] )
 
 # ==============================================================================
-def matmatProd(A_in,ind_in,ind_out,M,S_2N):
+def matmatProd(A_in,ind_in,ind_out,M,s_2n):
     """
     Linear operator that calculates Coi * A_in assuming that we can write:
 
@@ -463,7 +477,7 @@ def matmatProd(A_in,ind_in,ind_out,M,S_2N):
         mask vector (with entries equal to 0 or 1)
     N : scalar integer
         Size of the complete data vector
-    S_2N : numpy array (size P >= 2N)
+    s_2n : numpy array (size P >= 2N)
         PSD vector
 
 
@@ -484,13 +498,13 @@ def matmatProd(A_in,ind_in,ind_out,M,S_2N):
     A_out = np.empty((N_out,K),dtype = np.float64)
 
     for j in range(K):
-        A_out[:,j] = matVectProd(A_in[:,j],ind_in,ind_out,M,S_2N)
+        A_out[:,j] = mat_vect_prod(A_in[:,j],ind_in,ind_out,M,s_2n)
 
     return A_out
 
 
 # ==============================================================================
-def covLinearOp(ind_in,ind_out,M,S_2N):
+def cov_linear_op(ind_in,ind_out,M,s_2n):
     """
     Construct a linear operator object that computes the operation C * v
     for any vector v, where C is a covariance matrix.
@@ -512,7 +526,7 @@ def covLinearOp(ind_in,ind_out,M,S_2N):
         contained in the output vector in the complete data vector
     M : numpy array (size N)
         mask vector (with entries equal to 0 or 1)
-    S_2N : numpy array (size P >= 2N)
+    s_2n : numpy array (size P >= 2N)
         PSD vector
 
 
@@ -524,9 +538,9 @@ def covLinearOp(ind_in,ind_out,M,S_2N):
 
     """
 
-    C_func = lambda x: matVectProd(x,ind_in,ind_out,M,S_2N)
-    CH_func = lambda x: matVectProd(x,ind_out,ind_in,M,S_2N)
-    Cmat_func = lambda X: matmatProd(X,ind_in,ind_out,M,S_2N)
+    C_func = lambda x: mat_vect_prod(x,ind_in,ind_out,M,s_2n)
+    CH_func = lambda x: mat_vect_prod(x,ind_out,ind_in,M,s_2n)
+    Cmat_func = lambda X: matmatProd(X,ind_in,ind_out,M,s_2n)
 
 
     N_in = len(ind_in)
@@ -547,13 +561,13 @@ def precondLinearOp(solver,N_out,N_in):
         #     Z[:,j] = solver(X[:,j])
         return np.array([solver(X[:,j]) for j in range(X.shape[1])]).T
 
-    P_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=P_func,
+    p_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=P_func,
     rmatvec = PH_func,matmat = Pmat_func,dtype=np.float64)
 
-    return P_op
+    return p_op
 
 
-def pcg_solve(ind_obs, M, S_2N, b, x0, tol, maxiter, Psolver, pcg_algo):
+def pcg_solve(ind_obs, mask, s_2n, b, x0, tol, maxiter, p_solver, pcg_algo):
     """
     Function that solves the problem Ax = b by calling iterative algorithms,
     using user-specified methods.
@@ -562,23 +576,26 @@ def pcg_solve(ind_obs, M, S_2N, b, x0, tol, maxiter, Psolver, pcg_algo):
     Parameters
     ----------
     ind_obs : array_like
-        array of size N_o or list containing the chronological indices of the values
-        contained in the observed data vector in the complete data vector
+        array of size n_o or list containing the chronological indices of the
+        values contained in the observed data vector in the complete data
+        vector
     M : numpy array (size N)
         mask vector (with entries equal to 0 or 1)
-    S_2N : numpy array (size P >= 2N)
+    s_2n : numpy array (size P >= 2N)
         PSD vector
     b : numpy array
-        vector of size N_o containing the right-hand side of linear system to solve
+        vector of size n_o containing the right-hand side of linear system to
+        solve
     x0 : numpy array
-        vector of size N_o: first guess for the linear system to be solved
+        vector of size n_o: first guess for the linear system to be solved
     tol : scalar float
         stopping criterium for the preconditioned conjugate gradient algorithm
-    Psolver : sparse.linalg.factorized instance
-        preconditionner matrix: linear operator which calculates an approximation
-        of the solution: u_approx = C_OO^{-1} b for any vector b
-    pcg_algo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg','scipy.cgs'}
-        Type of preconditioned conjugate gradient (PCG) algorithm to use among
+    p_solver : sparse.linalg.factorized instance
+        preconditionner matrix: linear operator which calculates an
+        approximation of the solution: u_approx = C_OO^{-1} b for any vector b
+    pcg_algo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg',
+        'scipy.cgs'}
+        Type of preconditioned conjugate gradient (PCG) algorithm to use.
 
 
     Returns
@@ -588,38 +605,43 @@ def pcg_solve(ind_obs, M, S_2N, b, x0, tol, maxiter, Psolver, pcg_algo):
 
     """
 
-    N_o = len(ind_obs)
-    #x0 = np.zeros(N_o)
+    n_o = len(ind_obs)
 
     if pcg_algo == 'mine':
-        Coo_func = lambda x: matVectProd(x,ind_obs,ind_obs,M,S_2N)
-        u,sr = precondBiCGSTAB(x0,b,Coo_func,maxiter,tol,Psolver)
+
+        def coo_func(x):
+            return mat_vect_prod(x, ind_obs, ind_obs, mask, s_2n)
+
+        u, sr = precondBiCGSTAB(x0, b, coo_func, maxiter, tol, p_solver)
+
     elif 'scipy' in pcg_algo:
-        Coo_op = covLinearOp(ind_obs,ind_obs,M,S_2N)
-        P_op = precondLinearOp(Psolver,N_o,N_o)
-        tol_eff = np.min([tol,tol*LA.norm(b)])
+        coo_op = cov_linear_op(ind_obs, ind_obs, mask, s_2n)
+        p_op = precondLinearOp(p_solver, n_o, n_o)
+        tol_eff = np.min([tol, tol * LA.norm(b)])
         if (pcg_algo == 'scipy') | (pcg_algo == 'scipy.bicgstab'):
-            u,info = sparse.linalg.bicgstab(Coo_op, b, x0=x0,
-            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
-            printPCGstatus(info)
+            u, info = sparse.linalg.bicgstab(coo_op, b, x0=x0, tol=tol_eff,
+                                             maxiter=maxiter, M=p_op,
+                                             callback=None)
+            print_pcg_status(info)
         elif (pcg_algo == 'scipy.bicg'):
-            u,info = sparse.linalg.bicg(Coo_op, b, x0=x0,
-            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
-            printPCGstatus(info)
+            u, info = sparse.linalg.bicg(coo_op, b, x0=x0, tol=tol_eff,
+                                         maxiter=maxiter, M=p_op,
+                                         callback=None)
+            print_pcg_status(info)
         elif (pcg_algo == 'scipy.cg'):
-            u,info = sparse.linalg.cg(Coo_op, b, x0=x0,
-            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
-            printPCGstatus(info)
+            u, info = sparse.linalg.cg(coo_op, b, x0=x0, tol=tol_eff,
+                                       maxiter=maxiter, M=p_op, callback=None)
+            print_pcg_status(info)
         elif (pcg_algo == 'scipy.cgs'):
-            u,info = sparse.linalg.cgs(Coo_op, b, x0=x0,
-            tol=tol_eff,maxiter=maxiter,M=P_op,callback=None)
-            printPCGstatus(info)
+            u, info = sparse.linalg.cgs(coo_op, b, x0=x0, tol=tol_eff,
+                                        maxiter=maxiter, M=p_op, callback=None)
+            print_pcg_status(info)
         else:
             raise ValueError("Unknown PCG algorithm name")
         print("Value of || A * x - b ||/||b|| at exit:")
-        print(str(LA.norm(Coo_op.dot(u)-b)/LA.norm(b)))
+        print(str(LA.norm(coo_op.dot(u)-b)/LA.norm(b)))
 
     else:
         raise ValueError("Unknown PCG algorithm name")
 
-    return u
+    return u, info

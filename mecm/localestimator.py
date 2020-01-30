@@ -369,7 +369,7 @@ class PSD_estimate:
     h : array_like
         vector of smoothing parameter values corresponding to the PSD estimates
         at frequencies contained in f_est (size N_est)
-    I : array_like
+    per : array_like
         periodogram of the data (size N)
     V : numpy array
         normalized estimator variance: V * pi^2/6 is the estimated variance of log(S_est)
@@ -388,8 +388,8 @@ class PSD_estimate:
 
     """
 
-    def __init__(self,N_est,N,Npoints,h_min = None,h_max = None,kind = 'linear',
-        wind = 'hanning',ker = 'epa'):
+    def __init__(self, N_est, N, Npoints, h_min=None, h_max=None,
+                 kind='linear', wind='hanning', ker='epa'):
 
         self.N = N
         self.f = np.fft.fftfreq(N)
@@ -479,7 +479,6 @@ class PSD_estimate:
 
         return f_knots
 
-
     def compute_periodogram(self,x):
         """
         Compute the windowed periodogram from time series x,
@@ -489,27 +488,26 @@ class PSD_estimate:
         if (x.shape[0] == self.N):
             if self.wind == 'hanning':
                 # Compute periodogram
-                I = np.abs(fft(x*self.w))**2 / self.s2
+                per = np.abs(fft(x*self.w))**2 / self.s2
             elif self.wind == 'ones':
-                I = np.abs(fft(x))**2 / self.s2
+                per = np.abs(fft(x))**2 / self.s2
         else:
             if self.wind == 'hanning':
                 w = np.hanning(x.shape[0])
                 s2 = np.sum(w**2)
-                I = np.abs(fft(x*w))**2 / s2
+                per = np.abs(fft(x*w))**2 / s2
             elif self.wind == 'ones':
                 s2 = x.shape[0]
-                I = np.abs(fft(x))**2 / s2
+                per = np.abs(fft(x))**2 / s2
 
-        return I
+        return per
 
-
-    def estimate(self,x,variance = False):
+    def estimate(self, x, variance=False):
         """
         method computing the PSD estimate of the input data x at frequencies
         fj contained in f_est, using the local least-squares technique
         Calculate or update the values of the attributes S_est, PSD_function,
-        PSD_variance_function, and possibly I
+        PSD_variance_function, and possibly per
 
 
         Parameters
@@ -522,18 +520,15 @@ class PSD_estimate:
             if True, compute an estimate of the variance of the PSD estimator
 
         """
-        # # Estimation of the PSD function
-        # self.S_est,b_est,V_est,sigma2_0_est,I=localLinearEstimator(x,self.f_est,
-        # self.h,wind=w,variance = variance,ST_given = self.ST)
         # Compute periodogram
-        I = self.compute_periodogram(x)
+        per = self.compute_periodogram(x)
         # Compute log-psd estimate from periodogram
-        self.estimateFromI(I,variance = variance)
+        self.estimate_from_periodogram(per, variance=variance)
 
-    def estimateFromI(self,I,variance = False):
+    def estimate_from_periodogram(self, per, variance=False):
         """
         method computing the PSD estimate from the values of the input
-        periodogram I. Calculate or update the values of the attributes S_est,
+        periodogram per. Calculate or update the values of the attributes S_est,
         PSD_function, PSD_variance_function
 
 
@@ -544,52 +539,36 @@ class PSD_estimate:
         w : characted string
             type of apodization window to apply
         periodogram : boolean
-            if True, the periodogram is stored in the attribute "I"
+            if True, the periodogram is stored in the attribute "per"
 
 
         """
-
-
-        # Estimation of the PSD function
-        # self.S_est,b_est,V_est,sigma2_0_est,_=localLinearEstimatorFromI(I,
-        # self.f_est,self.h,variance = variance,ST_given = self.ST)
 
         # Compute Fourier grid
-        if (I.shape[0] == self.N) :
+        if (per.shape[0] == self.N):
             f = self.f[:]
         else:
-            f = np.fft.fftfreq(I.shape[0])
-        n = np.int((I.shape[0]-1)/2.)
+            f = np.fft.fftfreq(per.shape[0])
+        n = np.int((per.shape[0]-1)/2.)
 
         # Estimate log-psd
-        self.m_est,b_est,V,sigma2_0,ST = localLinearSmoother(np.log(I[1:n+1])-self.C0,
-        f[1:n+1],self.f_est,self.h,ker=self.ker,
-        variance=variance,ST_given = self.ST)
+        self.m_est, b_est, V, sigma2_0, ST = localLinearSmoother(
+            np.log(per[1:n+1])-self.C0, f[1:n+1], self.f_est, self.h,
+            ker=self.ker, variance=variance, ST_given=self.ST)
 
-        # # Calculate the interpolation function
-        # self.PSD_function = interpolate.interp1d(np.log(self.f_est),np.log(self.S_est),
-        # kind = self.kind,fill_value = 'extrapolate')
-        # Calcualte the interpolation function
-        self.logPSD_function = interpolate.interp1d(self.logf_est,self.m_est,
-        kind = self.kind,fill_value = "extrapolate")
+        # Calculate the interpolation function
+        self.logPSD_function = interpolate.interp1d(self.logf_est, self.m_est,
+                                                    kind=self.kind,
+                                                    fill_value="extrapolate")
 
         if variance:
-            self.PSD_variance_function = interpolate.interp1d(self.logf_est,
-            V_est[self.f_est>0]*np.pi**2/6.,kind=self.kind,fill_value = 'extrapolate')
+            self.PSD_variance_function = interpolate.interp1d(
+                self.logf_est, V[self.f_est > 0] * np.pi**2/6., kind=self.kind,
+                fill_value='extrapolate')
 
-        # Interpolate the PSD itself, not the log-psd
-        # self.PSD_function = interpolate.interp1d(self.f_est,self.S_est,
-        # kind = self.kind)
-        # if variance:
-        #     # Interpolate the variance of the log-PSD
-        #     var = V_est[self.f_est>0]*np.pi**2/6.
-        #     self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
-        #     np.exp(2*self.S_est + var)*(np.exp(var)-1),
-        #     kind=self.kind)
-
-    def MLestimateFromI(self,I,Niter = 1,variance = False):
+    def ml_estimate_from_per(self, per, Niter=1, variance=False):
         """
-        method computing the PSD estimate from the input periodogram I at
+        method computing the PSD estimate from the input periodogram per at
         frequencies fj contained in f_est, using the local maximum likelihood
         technique.
         Calculate or update the values of the attributes S_est, PSD_function
@@ -597,40 +576,42 @@ class PSD_estimate:
 
         Parameters
         ----------
-        I : array_like
+        per : array_like
             periodogram array (size N)
         Niter : scalar integer
-            number of iterations in the Newton-Raphson algorithm used to compute
-            the maximum likelihood estimate.
+            number of iterations in the Newton-Raphson algorithm used to
+            compute the maximum likelihood estimate.
 
         """
 
         # Compute Fourier grid
-        if (I.shape[0] == self.N) :
+        if (per.shape[0] == self.N):
             f = self.f[:]
         else:
-            f = np.fft.fftfreq(I.shape[0])
-        n = np.int((I.shape[0]-1)/2.)
+            f = np.fft.fftfreq(per.shape[0])
+        n = np.int((per.shape[0]-1)/2.)
 
         # First estimate log-psd using least-square estimator
-        a_est,b_est,V,sigma2_0,ST = localLinearSmoother(np.log(I[1:n+1])-self.C0,
-        f[1:n+1],self.f_est,self.h,ker=self.ker,
-        variance=variance,ST_given = self.ST)
+        a_est, b_est, V, sigma2_0, ST = localLinearSmoother(
+            np.log(per[1:n+1])-self.C0, f[1:n+1], self.f_est, self.h,
+            ker=self.ker, variance=variance, ST_given=self.ST)
         # Refine estimate using maximum likelihood
-        self.m_est,b_est = localMLEstimator(I[1:n+1],f[1:n+1],self.f_est,
-        self.h,a_est,b_est,ker = self.ker,Niter = Niter,ST_given = self.ST)
-
-
+        self.m_est, b_est = localMLEstimator(per[1:n+1], f[1:n+1], self.f_est,
+                                             self.h, a_est, b_est,
+                                             ker=self.ker,
+                                             Niter=Niter, ST_given=self.ST)
 
         # # Estimation of the PSD function
-        # self.S_est,b_est = localMLEstimatorFromI(I,self.f_est,self.h,Niter = Niter,
+        # self.S_est,b_est = localMLEstimatorFromI(per,self.f_est,self.h,Niter = Niter,
         # ST_given = self.ST)
         # # Calcualte the interpolation function
         # self.PSD_function = interpolate.interp1d(self.f_est,np.log(self.S_est),
         # kind=self.kind)
         # Calcualte the interpolation function
         self.logPSD_function = interpolate.interp1d(self.logf,
-        self.m_est,kind = self.kind,fill_value = "extrapolate")
+                                                    self.m_est,
+                                                    kind=self.kind,
+                                                    fill_value="extrapolate")
         # Interpolate the PSD itself, not the log-psd
         # self.PSD_function = interpolate.interp1d(self.f_est,self.S_est,
         # kind = self.kind)
@@ -638,10 +619,10 @@ class PSD_estimate:
         if variance:
             # Calcualte the variance interpolation function
             self.logPSD_function = interpolate.interp1d(self.logf,
-            V_est*np.pi**2/6.,kind = self.kind,fill_value = "extrapolate")
+            V*np.pi**2/6., kind=self.kind, fill_value="extrapolate")
         #self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],V_est[self.f_est>0]*np.pi**2/6.)
 
-    def MLestimate(self,x,Niter = 1,variance = False):
+    def MLestimate(self, x, Niter=1, variance=False):
         """
         method computing the PSD estimate of the input data x at frequencies
         fj contained in f_est, using the local maximum likelihood technique.
@@ -660,9 +641,9 @@ class PSD_estimate:
 
         """
         # Compute the periodogram
-        I = self.compute_periodogram(x)
+        per = self.compute_periodogram(x)
         # Compute local maximum likelihood estimator
-        self.MLestimateFromI(I,Niter = Niter,variance = variance)
+        self.ml_estimate_from_per(per,Niter = Niter,variance = variance)
 
 
     def calculate(self,arg):

@@ -25,25 +25,25 @@ Let's consider a data model that can be written on the form
 
 where:
 
-  * y is the measured time series data (size N), evenly sampled.
+  * y is the measured time series data (size n_data), evenly sampled.
 
-  * A is the design matrix (size N x K)
+  * A is the design matrix (size n_data x K)
 
   * :math:`\beta` is the vector of parameters to estimate (size K)
 
   * n is the noise vector, assumed to follow a Gaussian stationary distribution with a given smooth spectral density S(f)
 
 Now assume that only some entries of the vector y are observed. The indices of
-observed and missing data are provided by a binary mask vector M, whose entries
+observed and missing data are provided by a binary mask vector mask, whose entries
 are equal to 1 when data are observed, 0 otherwise.
 So in fact we observe only a vector y_obs such that
 
 .. code-block::
 
-  y_obs = y[M==1]
+  y_obs = y[mask==1]
 
 The mecm package implements a method to estimate :math:`\beta` and S(f) given y_obs,
-A and M.
+A and mask.
 
 
 The main methods of the package are:
@@ -114,13 +114,13 @@ we then filter to obtain a stationary colored noise:
   import random
   from scipy import signal
   # Choose size of data
-  N = 2**14
+  n_data = 2**14
   # Generate Gaussian white noise
-  noise = np.random.normal(loc=0.0, scale=1.0, size = N)
+  noise = np.random.normal(loc=0.0, scale=1.0, size=n_data)
   # Apply filtering to turn it into colored noise
   r = 0.01
   b, a = signal.butter(3, 0.1/0.5, btype='high', analog=False)
-  n = signal.lfilter(b,a, noise, axis=-1, zi=None) + noise*r
+  n = signal.lfilter(b, a, noise, axis=-1, zi=None) + noise*r
 
 ```
 
@@ -129,7 +129,7 @@ frequency f0 and amplitude a0:
 
 .. code-block::
 
-  t = np.arange(0,N)
+  t = np.arange(0, n_data)
   f0 = 1e-2
   a0 = 5e-3
   s = a0*np.sin(2*np.pi*f0*t)
@@ -141,30 +141,30 @@ We just have generated a time series that can be written in the form
   y = A \beta + n
 
 Now assume that some data are missing, i.e. the time series is cut by random gaps.
-The pattern is represented by a mask vector M with entries equal to 1 when data
+The pattern is represented by a mask vector mask with entries equal to 1 when data
 is observed, and 0 otherwise:
 
 .. code-block::
 
-  M = np.ones(N)
-  Ngaps = 30
-  gapstarts = (N*np.random.random(Ngaps)).astype(int)
+  mask = np.ones(n_data)
+  n_gaps = 30
+  gapstarts = (n_data*np.random.random(n_gaps)).astype(int)
   gaplength = 10
   gapends = (gapstarts+gaplength).astype(int)
-  for k in range(Ngaps): M[gapstarts[k]:gapends[k]]= 0
+  for k in range(n_gaps): mask[gapstarts[k]:gapends[k]]= 0
 
-Therefore, we do not observe y but its masked version, M*y.
+Therefore, we do not observe y but its masked version, mask*y.
 
 2. Linear regression
 
-Now let's assume that we observed M*y and that we want to estimate the amplitude
+Now let's assume that we observed mask*y and that we want to estimate the amplitude
 of the sine wave whose frequency and phase are known, along with the PSD of the
 noise residuals.
 The available data is
 
 .. code-block::
 
-  y = M*(s+n)
+  y = mask * (s + n)
 
 We must specify the design matrix (i.e. the data model) by:
 
@@ -176,7 +176,7 @@ Then we can just run the mecm maximum likelihood estimator, by writing:
 
 .. code-block::
 
-  a0_est,a0_cov,a0_vect,y_rec,I_condMean,PSD = mecm.maxlike(y,M,A)
+  a0_est, a0_cov, a0_vect, y_rec, p_cond, PSD, success = mecm.maxlike(y,mask,A)
 
 The result of this function is, in the order provided: the estimated amplitude,
 its estimated covariance, the vector containing the amplitude updates at each

@@ -11,17 +11,145 @@ import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
 import random
 import copy
-from .matrixalgebra import covLinearOp, precondLinearOp, matPrecondBiCGSTAB
-from .matrixalgebra import matVectProd, pcg_solve
+from .matrixalgebra import cov_linear_op, precondLinearOp, matPrecondBiCGSTAB
+from .matrixalgebra import mat_vect_prod, pcg_solve
 from .noise import generateNoiseFromDSP
 from .leastsquares import pmesureWeighted, pmesure_optimized_TF
 from .localestimator import nextpow2, PSD_estimate
+from .psd import PSDSpline
 pyfftw.interfaces.cache.enable()
+
+
+class MECM:
+
+    def __init__(self, y, mask, a_mat, psd_cls, eps=1e-3, p=20,
+                 nd=10, nit_cg=1000, tol_cg=1e-4, pcg_algo='scipy'):
+
+        self.y = y
+        self.mask = mask
+        self.a_mat = a_mat
+        self.psd_cls = psd_cls
+        self.eps = eps
+        self.p = p
+        self.nd = nd
+        self.nit_cg = nit_cg
+        self.tol_cg = tol_cg
+        self.pcg_algo = pcg_algo
+
+        # Store the information about the output of the PCG computations
+        self.infos = []
+
+        # Initialization
+        # First guess: ordinary least squares
+        beta0 = pmesureWeighted(y * mask, a_mat, mask)
+        self.beta0_norm = LA.norm(beta0)
+        # History of estimates N_iterations x K
+        self.beta_vect = copy.deepcopy(beta0)
+
+        # Initialization of variables
+        self.beta = copy.deepcopy(beta0)
+        self.beta_old = np.zeros(beta0.shape[0])
+
+        # Difference from one update to the other
+        self.diff = 1.
+        # Number of data points
+        self.n_data = len(y)
+        # Number of Fourier frequencies used for the spectrum calculation
+        if self.n_data % 2 == 0:
+            self.n_fft = np.int(2 * self.n_data)
+        else:
+            self.n_fft = np.int(2**nextpow2(2 * self.n_data))
+
+        self.counter = 0
+        self.precond_solver = None
+        self.p_cond_mean = periodogram(mask*(y - np.dot(a_mat, beta0)),
+                                       y.shape[0],
+                                       wind=np.hanning(y.shape[0])*mask)
+
+        # PSD Initialization
+        self.psd_cls.estimate_from_periodogram(self.p_cond_mean)
+        # self.psd_cls.estimate(mask*(y - np.dot(a_mat, beta0)))
+        self.s_n = psd_cls.calculate(self.n_data)
+        self.s_2n = psd_cls.calculate(self.n_fft)
+
+        self.y_rec = y[:]
+
+    def e_step(self):
+
+        # E step : missing data reconstruction
+        # ------------------------------------
+        self.y_rec, self.precond_solver = conj_grad_imputation(
+            self.y, self.a_mat, self.beta, self.mask, self.s_2n,
+            self.p, self.nit_cg, self.pcg_algo,
+            precond_solver=self.precond_solver,
+            tol=self.tol_cg, store_info=self.infos)
+
+        # Conditional draws
+        cond_draws = cond_monte_carlo(
+            self.mask * (self.y - np.dot(self.a_mat, self.beta)),
+            self.precond_solver, self.mask, self.nd, self.s_2n, self.nit_cg,
+            self.pcg_algo, tol=self.tol_cg, store_info=self.infos)
+
+        # Periodogram of the draws
+        p_mat = periodogram(cond_draws, cond_draws.shape[1])
+        # Conditional average
+        self.p_cond_mean = np.mean(p_mat, axis=0)
+
+    def cm1_step(self):
+
+        # CM1 step : estimation of deterministic model parameters
+        # -------------------------------------------------------
+        self.beta_old = self.beta[:]
+        self.beta = np.real(pmesure_optimized_TF(self.y_rec, self.a_mat,
+                                                 self.s_n))
+        self.beta_vect = np.vstack((self.beta_vect, self.beta))
+
+    def cm2_step(self):
+
+        # CM2 step : estimation of noise model parameters (PSD)
+        # -------------------------------------------------------
+        # PSD.MLestimateFromI(p_cond_mean, Niter=1)
+        self.psd_cls.estimate_from_periodogram(self.p_cond_mean)
+        self.s_n = self.psd_cls.calculate(self.n_data)
+        self.s_2n = self.psd_cls.calculate(self.n_fft)
+
+    def ecm_step(self, verbose=False):
+
+        if (self.diff > self.eps):
+
+            # Expectation step
+            self.e_step()
+            # Maximization steps
+            self.cm1_step()
+            self.cm2_step()
+
+            # Calculate the relative difference between new update and old
+            # parameter estimate
+            self.diff = LA.norm(self.beta - self.beta_old)/self.beta0_norm
+
+            # Update counter
+            self.counter += 1
+
+            if verbose:
+                print('--------------------------')
+                print('Iteration ' + str(self.counter)
+                      + ' completed, de/e =' + str(self.diff))
+                print('--------------------------')
+
+        else:
+            pass
+
+    def compute_covariance(self, nthreads=1):
+
+        return mecmcovariance(self.a_mat, self.mask, self.s_2n,
+                              self.precond_solver, self.pcg_algo,
+                              n_it=self.nit_cg, tol=self.tol_cg,
+                              nthreads=nthreads)
 
 
 def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
             nit_cg=1000, tol_cg=1e-4, compute_cov=True, verbose=True,
-            pcg_algo='scipy'):
+            pcg_algo='scipy', psd_cls=None):
     """
 
     Function estimating the regression parameters for a problem of
@@ -63,6 +191,8 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
     pcg_algo : string {'mine','scipy','scipy.bicgstab','scipy.bicg','scipy.cg',
         'scipy.cgs'}
         Type of preconditioned conjugate gradient (PCG) algorithm to use.
+    psd_cls : psd.PSDSpline instance or None
+        PSD model class
 
     Returns
     -------
@@ -76,7 +206,7 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
     y_rec : array_like (size n_data)
         reconstructed data vector, i.e. conditional expectation of the data
         given the available observations.
-    I_condMean : array_like (size n_data)
+    p_cond_mean : array_like (size n_data)
         conditional expectation of the noise periodogram
     PSD : PSD_estimate class instance
         class containing all the information regarding the estimated noise PSD
@@ -95,107 +225,46 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
 
     """
 
-    # First guess: ordinary least squares
-    beta0 = pmesureWeighted(y * mask, a_mat, mask)
-    beta0_norm = LA.norm(beta0)
+    # Instantiate PSD class
+    if psd_cls is None:
+        n_data = y.shape[0]
+        # Number of Fourier frequencies used for the spectrum calculation
+        if n_data % 2 == 0:
+            n_fft = np.int(2 * n_data)
+        else:
+            n_fft = np.int(2**nextpow2(2 * n_data))
+        psd_cls = PSD_estimate(n_est, n_data, n_fft, h_min=None, h_max=None)
+        # psd_cls = PSDSpline(n_data, 1.0, n_knots=30, d=3,
+        #                     fmin=None, fmax=None, f_knots=None, ext=3)
+    # Intantiate ECM class
+    ecm = MECM(y, mask, a_mat, psd_cls, eps=eps, p=p,
+               nd=nd, nit_cg=nit_cg, tol_cg=tol_cg, pcg_algo=pcg_algo)
 
-    # Initialization of variables
-    beta_old = np.zeros(np.shape(beta0))
-    beta_vect = copy.deepcopy(beta0)
-    beta_new = copy.deepcopy(beta0)
+    # Run M-ECM iterations alternating betweeb E-steps and M-steps
+    [ecm.ecm_step(verbose=verbose) for i in range(n_it_max)]
 
-    # Difference from one update to the other
-    diff = 1.
-    # Number of data points
-    n_data = len(y)
-    # Number of Fourier frequencies used for the spectrum calculation
-    if n_data % 2 == 0:
-        P = np.int(2*n_data)
-    else:
-        P = np.int(2**nextpow2(2*n_data))
-
-    # Extended mask to the circulant process
-    PSD = PSD_estimate(n_est, n_data, P, h_min=None, h_max=None)
-    counter = 0
-
-    # PSD initialization
-    PSD.estimate(mask*(y - np.dot(a_mat, beta0)))
-    s_n = PSD.calculate(n_data)
-    s_2n = PSD.calculate(P)
-
-    diff = 1.0
-
-    if 'scipy' in pcg_algo:
-        print("The chosen PCG algorithm is from scipy.")
-
-    while (diff > eps) & (counter <= n_it_max):
-
-        # The new beta becomes the old one
-        beta_old = beta_new
-
-        # E step : missing data reconstruction
-        # ------------------------------------
-        R = np.real(ifft(s_2n))
-        y_rec, solver = conjGradImputation(y, a_mat, beta_old, mask, s_2n, R,
-                                           p, nit_cg, pcg_algo, tol=tol_cg)
-
-        # Conditional draws
-        condDraws = conditionalMonteCarlo(mask*(y - np.dot(a_mat, beta_old)),
-                                          solver,
-                                          mask,
-                                          nd,
-                                          s_2n,
-                                          nit_cg,
-                                          pcg_algo,
-                                          tol=tol_cg)
-
-        # Periodogram of the draws
-        I_mat = periodogram(condDraws, condDraws.shape[1])
-        # Conditional average
-        I_condMean = np.mean(I_mat, axis=0)
-        # logI_condMean = np.mean( np.log(I_mat,axis=0) )
-
-        # CE1 step : estimation of deterministic model parameters
-        # -------------------------------------------------------
-        beta_new = np.real(pmesure_optimized_TF(y_rec, a_mat, s_n))
-        beta_vect = np.vstack((beta_vect, beta_new))
-
-        # CE2 step : estimation of noise model parameters (PSD)
-        # -------------------------------------------------------
-        PSD.MLestimateFromI(I_condMean, Niter=1)
-        s_n = PSD.calculate(n_data)
-        s_2n = PSD.calculate(P)
-
-        # Update counter
-        counter += 1
-        # Calculate the relative difference between new update and old
-        # parameter estimate
-        diff = LA.norm(beta_new-beta_old)/beta0_norm
-
-        if verbose:
-            print('--------------------------')
-            print('Iteration ' + str(counter)
-                  + ' completed, de/e =' + str(diff))
-            print('--------------------------')
+    # Output flag
+    success = np.all(np.array(ecm.infos) == 0)
 
     print("------ MECM iterations completed. ------")
-    if diff > eps:
+    if ecm.diff > eps:
         raise Warning("Attention: MECM algorithm ended \
         without reaching the specified convergence criterium.")
-        print("Current criterium: " + str(diff) + " > " + str(eps))
+        print("Current criterium: " + str(ecm.diff) + " > " + str(eps))
+        success = False
 
     print("Computation of the covariance...")
     if compute_cov:
-        cov, U = mecmcovariance(a_mat, mask, s_2n, solver, pcg_algo,
-                                Nit=nit_cg, tol=tol_cg, nthreads=1)
+        cov, u = ecm.compute_covariance(nthreads=1)
     else:
         cov = None
 
-    return beta_new, cov, beta_vect, y_rec[0:n_data], I_condMean, PSD
+    return (ecm.beta, cov, ecm.beta_vect, ecm.y_rec[0:ecm.n_data],
+            ecm.p_cond_mean, ecm.psd_cls, success)
 
 
 # ==============================================================================
-def mecmcovariance(a_mat, mask, s_2n, solve, pcg_algo, Nit=150, tol=1e-7,
+def mecmcovariance(a_mat, mask, s_2n, solve, pcg_algo, n_it=150, tol=1e-7,
                    r=1e-15, nthreads=1):
     """
     Function estimating the covariance of regression parameters for a problem
@@ -207,11 +276,11 @@ def mecmcovariance(a_mat, mask, s_2n, solve, pcg_algo, Nit=150, tol=1e-7,
         design matrix (contains partial derivatives of signal wrt parameters)
     mask : numpy array (size n_data)
         mask vector (with entries equal to 0 or 1)
-    s_2n : numpy array (size P >= 2N)
+    s_2n : numpy array (size n_fft >= 2N)
         PSD vector
     solve : sparse.linalg.factorized instance
         linear operator which calculates x = C_OO^{-1} b for any vector b
-    Nit : scalar integer, optional
+    n_it : scalar integer, optional
         maximum number of iterations for the conjugate gradient algorithm.
     tol : scalar float, optional
         tolerance criterium to stop the PCG algorithm (default is 1e-7)
@@ -240,15 +309,15 @@ def mecmcovariance(a_mat, mask, s_2n, solve, pcg_algo, Nit=150, tol=1e-7,
 
     if pcg_algo == 'mine':
         def coo_func(x):
-            return matVectProd(x, ind_obs, ind_obs, mask, s_2n)
-        U = matPrecondBiCGSTAB(x0, A_obs, coo_func, Nit, tol, solve,
+            return mat_vect_prod(x, ind_obs, ind_obs, mask, s_2n)
+        U = matPrecondBiCGSTAB(x0, A_obs, coo_func, n_it, tol, solve,
                                pcg_algo=pcg_algo, nthreads=nthreads)
     elif 'scipy' in pcg_algo:
-        Coo_op = covLinearOp(ind_obs, ind_obs, mask, s_2n)
+        Coo_op = cov_linear_op(ind_obs, ind_obs, mask, s_2n)
         P_op = precondLinearOp(solve, len(ind_obs), len(ind_obs))
-        U = matPrecondBiCGSTAB(x0, A_obs, Coo_op, Nit, tol, P_op,
+        U = matPrecondBiCGSTAB(x0, A_obs, Coo_op, n_it, tol, P_op,
                                pcg_algo=pcg_algo, nthreads=nthreads)
-        # innerPrecondBiCGSTAB(U,x0,A_obs,Coo_op,Nit,tol,P_op,pcg_algo)
+        # innerPrecondBiCGSTAB(U,x0,A_obs,Coo_op,n_it,tol,P_op,pcg_algo)
 
     try:
         cov = LA.pinv(np.dot(np.conj(A_obs.T), U), rcond=r)
@@ -328,22 +397,22 @@ def periodogram(x_mat, nfft, wind='hanning'):
 
 
 # ==============================================================================
-def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
-                    ind_mis, mask, pcg_algo, tol=1e-7):
+def cond_draw(n_fft, n_it, s_2n, solver, z_o, mu_m_given_o, ind_obs,
+              ind_mis, mask, pcg_algo, tol=1e-7, store_info=None):
     """
     Function performing random draws of the complete data noise vector
     conditionnaly on the observed data.
 
     Parameters
     ----------
-    Np : scalar integer
+    n_fft : scalar integer
         Size of the initial random vector which is drawn. The initial vector
         follows a stationary distribution whose covariance matrix is circulant.
         It is then truncated to N_final to obtain the desired distribution whose
         covariance matrix is Toeplitz.
-    Nit : scalar integer
+    n_it : scalar integer
         Maximum number of conjugate gradient iterations.
-    s_2n : numpy array (size P >= 2N)
+    s_2n : numpy array (size n_fft >= 2N)
         PSD vector
     coo_func : function
         Linear operator that calculates the matrix-to-vector product Coo x for
@@ -353,8 +422,8 @@ def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
     z_o : array_like (size No)
         vector of observed residuals
     mu_m_given_o : array_like (size Nm)
-        vector of conditional expectation of the missing data given the observed
-        data
+        vector of conditional expectation of the missing data given the
+        observed data
     ind_obs : array_like (size No)
         vector of chronological indices of the observed data points in the
         complete data vector
@@ -365,6 +434,8 @@ def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
         mask vector (with entries equal to 0 or 1)
     tol : scalar float
         Stoping criteria for the conjugate gradient algorithm, optional
+    store_info : list or None
+        If list, append the output flag of the PCG algorithm to the list.
 
     Returns
     -------
@@ -379,8 +450,8 @@ def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
     n_data = len(mask)
     DSP = np.sqrt(s_2n*2.)
     v = generateNoiseFromDSP(DSP, 1.)
-    # v = np.array([random.gauss(0,1.) for _ in range(Np)])
-    # e = np.sqrt(Np/np.float(N_final))*np.sqrt(Np)
+    # v = np.array([random.gauss(0,1.) for _ in range(n_fft)])
+    # e = np.sqrt(n_fft/np.float(N_final))*np.sqrt(n_fft)
     # * np.real( ifft( np.sqrt(s_2n) * v )[0:N_final] )
     e = np.real(v[0:n_data] * np.sqrt(np.var(v)/np.var(v[0:n_data])))
     # u0 = solve(e[self.ind_obs])
@@ -388,12 +459,16 @@ def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
     n_o = len(ind_obs)
     u0 = np.zeros(n_o)
 
-    u = pcg_solve(ind_obs, mask, s_2n, e[ind_obs], u0, tol, Nit, solver,
-                  pcg_algo)
+    u, info = pcg_solve(ind_obs, mask, s_2n, e[ind_obs], u0, tol, n_it, solver,
+                        pcg_algo)
 
-    #u,sr = conjugateGradientSolvePrecond(u0,e[ind_obs],coo_func,Nit,stop,solver)
+    if store_info:
+        store_info.append(info)
 
-    u_m_o = matVectProd(u,ind_obs,ind_mis,mask,s_2n)
+    # u, sr = conjugateGradientSolvePrecond(u0,e[ind_obs],coo_func,n_it,stop,
+    #                                       solver)
+
+    u_m_o = mat_vect_prod(u, ind_obs, ind_mis, mask, s_2n)
 
     eps = np.zeros(n_data)
 
@@ -404,8 +479,10 @@ def conditionalDraw(Np, Nit, s_2n, solver, z_o, mu_m_given_o, ind_obs,
 
     return eps
 
+
 # ==============================================================================
-def conditionalMonteCarlo(eps,solve,mask,nd,s_2n,Nit,pcg_algo,seed = None,tol=1e-7):
+def cond_monte_carlo(eps, solve, mask, nd, s_2n, n_it, pcg_algo, seed=None,
+                     tol=1e-7, store_info=None):
     """
     Function performing random draws of the complete data noise vector
     conditionnaly on the observed data.
@@ -418,28 +495,30 @@ def conditionalMonteCarlo(eps,solve,mask,nd,s_2n,Nit,pcg_algo,seed = None,tol=1e
         linear operator which calculates x = C_OO^{-1} b for any vector b
     mask : numpy array (size n_data)
         mask vector (with entries equal to 0 or 1)
-    s_2n : numpy array (size P >= 2N)
+    s_2n : numpy array (size n_fft >= 2N)
         PSD vector
-    Nit : scalar integer
+    n_it : scalar integer
         Maximum number of conjugate gradient iterations.
     seed : character string, optional
         Regenerate the seed with system time (if None) or chosen integer.
     tol : scalar float
         Stoping criteria for the conjugate gradient algorithm, optional
+    store_info : list or None
+        If list, append the output flag of the PCG algorithm to the list.
 
 
     Returns
     -------
-    condDraws : numpy array (size nd x n_data)
+    cond_draws : numpy array (size nd x n_data)
         Matrix whose rows are realization of the conditional noise vector
 
     """
 
     # Missing data indices
-    ind_mis = np.where( mask==0 )[0]
-    ind_obs = np.where( mask!=0 )[0]
+    ind_mis = np.where(mask == 0)[0]
+    ind_obs = np.where(mask != 0)[0]
     n_data = len(mask)
-    Np = len(s_2n)
+    n_fft = len(s_2n)
 
     # Calculate the residuals at the observed data points
     eps_o = eps[ind_obs]
@@ -447,25 +526,28 @@ def conditionalMonteCarlo(eps,solve,mask,nd,s_2n,Nit,pcg_algo,seed = None,tol=1e
     # Calculate the conditional mean
     n_o = len(ind_obs)
     x0 = np.zeros(n_o)
-    u = pcg_solve(ind_obs,mask,s_2n,eps_o,x0,tol,Nit,solve,pcg_algo)
+    u, info = pcg_solve(ind_obs, mask, s_2n, eps_o, x0, tol, n_it, solve,
+                        pcg_algo)
+    if store_info:
+        store_info.append(info)
 
-    #u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps_o,coo_func,Nit,np.std(eps_o),solve)
-    mu_m_given_o = matVectProd(u,ind_obs,ind_mis,mask,s_2n)
-    # Calculate the stopping criteria
-    stop = np.std(eps_o)
+    # u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps_o,
+    # coo_func,n_it,np.std(eps_o),solve)
+    mu_m_given_o = mat_vect_prod(u, ind_obs, ind_mis, mask, s_2n)
 
-    condDraws = np.zeros((nd,n_data))
+    cond_draws = np.zeros((nd, n_data))
     # Regenerate the seed with system time or chosen integer
     random.seed(seed)
 
     # ==========================================================================
     # Without parallelization:
     # ==========================================================================
-    for i in range(nd):
-        condDraws[i,:] = conditionalDraw(Np,Nit,s_2n,solve,eps_o,mu_m_given_o,
-        ind_obs,ind_mis,mask,pcg_algo,tol=tol)
+    cond_draws = np.array([cond_draw(n_fft, n_it, s_2n, solve, eps_o,
+                                     mu_m_given_o, ind_obs, ind_mis, mask,
+                                     pcg_algo, tol=tol, store_info=store_info)
+                           for i in range(nd)])
 
-    return condDraws
+    return cond_draws
 
 
 # ==============================================================================
@@ -473,7 +555,7 @@ def build_sparse_cov2(autocorr, p, n_data, form=None, taper='Wendland2'):
     """
     This function constructs a sparse matrix which is a tappered, approximate
     version of the covariance matrix of a stationary process of autocovariance
-    function R and size n_data x n_data.
+    function autocorr and size n_data x n_data.
 
     Parameters
     ----------
@@ -515,7 +597,8 @@ def build_sparse_cov2(autocorr, p, n_data, form=None, taper='Wendland2'):
             k = np.hstack((k, -i))
     # [build_diagonal(values, r_tap, k, i) for i in range(p + 1)]
 
-    return sparse.diags(values, k.astype(int), format=form, dtype=autocorr.dtype)
+    return sparse.diags(values, k.astype(int), format=form,
+                        dtype=autocorr.dtype)
 
 
 def build_diagonal(values, r_tap, k_vect, i):
@@ -551,7 +634,9 @@ def build_diagonal(values, r_tap, k_vect, i):
 
 
 # ==============================================================================
-def conjGradImputation(s,a_mat,beta,mask,s_2n,R,p,Nit,pcg_algo,tol=1e-7):
+def conj_grad_imputation(s, a_mat, beta, mask, s_2n, p, n_it,
+                         pcg_algo, precond_solver=None, tol=1e-7,
+                         store_info=None):
     """
     Function performing universal kriging with the model y = a_mat beta + n
     using the conjugate gradient algorithm to solve for C_OO x = b.
@@ -568,16 +653,19 @@ def conjGradImputation(s,a_mat,beta,mask,s_2n,R,p,Nit,pcg_algo,tol=1e-7):
         regression parameter vector
     mask : numpy array (size n_data)
         mask vector (with entries equal to 0 or 1)
-    s_2n : numpy array (size P)
+    s_2n : numpy array (size n_fft)
         spectrum array: value of the unilateral PSD times fs
-    R : numpy array (size P)
+    autocorr : numpy array (size n_fft)
         tappered autocovariance array: value of the autocovariance at all lags
     p : scalar integer
         number of lags to calculate the tapered approximation of the
-        autocoariance function. This is needed to pre-conditionate the conjugate
-        gradients.
-    Nit : scalar integer
+        autocoariance function. This is needed to pre-conditionate the
+        conjugate gradients.
+    n_it : scalar integer
         maximum number of iterations for the conjugate gradient algorithm
+    solve : sparse.linalg.factorized instance or None
+        linear operator which calculates x = C_OO^{-1} b for any vector b.
+        If None, it is computed using parameter p.
     tol : scalar float
         tolerance criterium to stop the PCG algorithm
 
@@ -589,53 +677,59 @@ def conjGradImputation(s,a_mat,beta,mask,s_2n,R,p,Nit,pcg_algo,tol=1e-7):
         linear operator which calculates x = C_OO^{-1} b for any vector b
     """
 
-
-
     n_data = len(s)
+
     # Preconditionning : use sparse matrix
     # ======================================================================
-    ind_mis = np.where( mask==0 )[0]#.astype(int)
-    ind_obs = np.where( mask!=0 )[0]#.astype(int)
-
+    ind_mis = np.where(mask == 0)[0]  # .astype(int)
+    ind_obs = np.where(mask != 0)[0]  # .astype(int)
 
     # Deterministic model for observed and missing data
     # ======================================================================
-    A_obs =  a_mat[mask==1,:]
-    A_mis =  a_mat[mask==0,:]
+    A_obs = a_mat[mask == 1, :]
+    A_mis = a_mat[mask == 0, :]
     beta_est = beta.T
 
     # Preconditionner
     # ======================================================================
-    solve = computePrecond(R,mask,p=p,taper = 'Wendland2')
+    if precond_solver is None:
+        autocorr = np.real(ifft(s_2n))
+        precond_solver = compute_precond(autocorr, mask, p=p,
+                                         taper='Wendland2')
 
     # Residuals of observed data - model
-    eps = s[ind_obs]-np.dot(A_obs,beta_est)
+    eps = s[ind_obs] - np.dot(A_obs, beta_est)
 
     # Conjugate gradients
     # ======================================================================
     # Solve the linear system C_oo x = eps
-    #u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps,coo_func,Nit,np.std(eps),solve)
+    # u,sr = conjugateGradientSolvePrecond(np.zeros(len(ind_obs)),eps,coo_func,
+    # n_it,np.std(eps),solve)
     n_o = len(ind_obs)
     x0 = np.zeros(n_o)
-    u = pcg_solve(ind_obs,mask,s_2n,eps,x0,tol,Nit,solve,pcg_algo)
+    u, info = pcg_solve(ind_obs, mask, s_2n, eps, x0, tol, n_it,
+                        precond_solver,
+                        pcg_algo)
+
+    if store_info:
+        store_info.append(info)
 
     # Calculate the conditional expectation of missing data
-    x = np.dot(A_mis,beta) +  matVectProd(u,ind_obs,ind_mis,mask,s_2n)
+    x = np.dot(A_mis, beta) + mat_vect_prod(u, ind_obs, ind_mis, mask, s_2n)
 
     z = np.zeros(n_data)
     z[ind_obs] = s[ind_obs]
     z[ind_mis] = x
 
-
-    return z,solve
+    return z, precond_solver
 
 
 # ==============================================================================
-def taper_covariance(h, theta, taper ='Wendland1', tau=10):
+def taper_covariance(h, theta, taper='Wendland1', tau=10):
     """
     Function calculating a taper covariance that smoothly goes to zero when h
-    goes to theta. This taper is to be mutiplied by the estimated covariance R
-    of the process, to discard correlations larger than theta.
+    goes to theta. This taper is to be mutiplied by the estimated covariance
+    autocorr of the process, to discard correlations larger than theta.
 
     Ref : Reinhard FURRER, Marc G. GENTON, and Douglas NYCHKA,
     Covariance Tapering for Interpolation of Large Spatial Datasets,
@@ -658,22 +752,22 @@ def taper_covariance(h, theta, taper ='Wendland1', tau=10):
         the taper covariance function values (vector of size n_data)
     """
 
-    ii = np.where(h<=theta)[0]
+    ii = np.where(h <= theta)[0]
 
-    if taper == 'Wendland1' :
+    if taper == 'Wendland1':
 
         c = np.zeros(len(h))
 
         c[ii] = (1.-h[ii]/np.float(theta))**4 * (1 + 4.*h[ii]/np.float(theta))
 
-    elif taper == 'Wendland2' :
+    elif taper == 'Wendland2':
 
         c = np.zeros(len(h))
 
         c[ii] = (1-h[ii]/np.float(theta))**6 * (1 + 6.*h[ii]/theta + \
         35*h[ii]**2/(3.*theta**2))
 
-    elif taper == 'Spherical' :
+    elif taper == 'Spherical':
 
         c = np.zeros(len(h))
 
@@ -683,7 +777,7 @@ def taper_covariance(h, theta, taper ='Wendland1', tau=10):
         c = np.zeros(len(h))
         c[ii] = (np.hanning(2*theta)[theta:2*theta])**2
 
-    elif taper == 'Gaussian' :
+    elif taper == 'Gaussian':
 
         c = np.zeros(len(h))
         sigma = theta/5.
@@ -692,11 +786,8 @@ def taper_covariance(h, theta, taper ='Wendland1', tau=10):
     elif taper == 'rectSmooth':
 
         c = np.zeros(len(h))
-        #tau = np.int(theta/3)
-
-
-        c[h<=theta-tau] = 1.
-        jj = np.where( (h>=theta-tau) & (h<=theta) )[0]
+        c[h <= theta-tau] = 1.
+        jj = np.where( (h >= theta-tau) & (h <= theta) )[0]
         c[jj] = 0.5*(1 + np.cos( np.pi*(h[jj]-theta+tau)/np.float(tau) ) )
 
     elif taper == 'modifiedWendland2':
@@ -717,61 +808,60 @@ def taper_covariance(h, theta, taper ='Wendland1', tau=10):
 
 
 # ==============================================================================
-def computePrecond(R, mask, p=10, ptype='sparse', taper='Wendland2', square=True):
+def compute_precond(autocorr, mask, p=10, ptype='sparse', taper='Wendland2',
+                    square=True):
     """
     For a given mask and a given PSD function, the function computes the linear
-    operator x = C_OO^{-1} b for any vector b, where C_OO is the covariance matrix
-    of the observed data (at points where mask==1).
+    operator x = C_OO^{-1} b for any vector b, where C_OO is the covariance
+    matrix of the observed data (at points where mask==1).
 
 
     Parameters
     ----------
-    R : numpy array
+    autocorr : numpy array
         input autocovariance functions at each lag (size n_data)
     mask : numpy array
         mask vector
     p : scalar integer
         number of lags to calculate the tapered approximation of the
-        autocoariance function. This is needed to pre-conditionate the conjugate
-        gradients.
+        autocoariance function. This is needed to pre-conditionate the
+        conjugate gradients.
     ptype : string {'sparse','circulant'}
-        specifies the type of preconditioner matrix (sparse approximation of the
-        covariance or circulant approximation of the covariance)
+        specifies the type of preconditioner matrix (sparse approximation of
+        the covariance or circulant approximation of the covariance)
     taper : string {'Wendland1','Wendland2','Spherical'}
-        name of the taper function. This argument is only used if ptype = 'sparse'
+        Name of the taper function. This argument is only used if
+        ptype='sparse'
     square : bool
         whether to build a square matrix. if False, then
 
     Returns
     -------
     solve : sparse.linalg.factorized instance
-        preconditionner operator, calculating P x for all vectors x
+        preconditionner operator, calculating n_fft x for all vectors x
 
     """
 
     n_data = len(mask)
 
     # ======================================================================
-    ind_mis = np.where( mask==0 )[0]#.astype(int)
-    ind_obs = np.where( mask!=0 )[0]#.astype(int)
+    ind_obs = np.where(mask != 0)[0]  # .astype(int)
     # Calculate the covariance matrix of the complete data
 
     if ptype == 'sparse':
         # Preconditionning : use sparse matrix
-        C = build_sparse_cov2(R, p, n_data, form="csc", taper=taper)
+        C = build_sparse_cov2(autocorr, p, n_data, form="csc", taper=taper)
         # Calculate the covariance matrix of the observed data
-        C_temp = C[:,ind_obs]
-        #C_OO = C_temp[ind_obs,:]
-        #del C_temp
-        #del C
+        C_temp = C[:, ind_obs]
         # Preconditionner
-        #solve =  sparse.linalg.factorized(C_OO)
         solve = sparse.linalg.factorized(C_temp[ind_obs, :])
 
     elif ptype == 'circulant':
 
-        S = np.real(fft(R))
-        N_fft = len(S)
-        solve = lambda v: np.real(ifft(fft(v,N_fft)/S,len(v)))
+        s_2n = np.real(fft(autocorr))
+        n_fft = len(s_2n)
+
+        def solve(v):
+            return np.real(ifft(fft(v, n_fft)/s_2n, len(v)))
 
     return solve
