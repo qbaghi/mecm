@@ -19,11 +19,8 @@ Fourier transforms, fast matrix-to-vector multiplications, and sparse linear alg
 
 Let's consider a data model that can be written on the form
 
-```math
+![equation](https://latex.codecogs.com/gif.latex?y&space;=&space;A&space;\beta&space;&plus;&space;n)
 
-  $y = A \beta + n$
-
-```
 
 where:
 
