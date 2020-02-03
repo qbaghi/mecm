@@ -19,9 +19,11 @@ Fourier transforms, fast matrix-to-vector multiplications, and sparse linear alg
 
 Let's consider a data model that can be written on the form
 
-.. math::
+```math
 
   y = A \beta + n
+
+```
 
 where:
 
@@ -133,14 +135,14 @@ frequency f0 and amplitude a0:
   t = np.arange(0, n_data)
   f0 = 1e-2
   a0 = 5e-3
-  s = a0*np.sin(2*np.pi*f0*t)
+  s = a0 * np.sin(2 * np.pi * f0 * t)
 
 ```
 We just have generated a time series that can be written in the form
 
-.. math::
-
+```math
   y = A \beta + n
+```
 
 Now assume that some data are missing, i.e. the time series is cut by random gaps.
 The pattern is represented by a mask vector mask with entries equal to 1 when data
@@ -172,7 +174,7 @@ We must specify the design matrix (i.e. the data model) by:
 
 ```python
 
-  A = np.array([np.sin(2*np.pi*f0*t)]).T
+  A = np.array([np.sin(2 * np.pi * f0 * t)]).T
 
 ```
 
@@ -180,7 +182,7 @@ Then we can just run the mecm maximum likelihood estimator, by writing:
 
 ```python
 
-  a0_est, a0_cov, a0_vect, y_rec, p_cond, PSD, success = mecm.maxlike(y,mask,A)
+  a0_est, a0_cov, a0_vect, y_rec, p_cond, PSD, success = mecm.maxlike(y, mask, A)
 
 ```
 
