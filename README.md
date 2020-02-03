@@ -21,7 +21,7 @@ Let's consider a data model that can be written on the form
 
 ```math
 
-  y = A \beta + n
+  $y = A \beta + n$
 
 ```
 
