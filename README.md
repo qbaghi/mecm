@@ -38,9 +38,11 @@ observed and missing data are provided by a binary mask vector mask, whose entri
 are equal to 1 when data are observed, 0 otherwise.
 So in fact we observe only a vector y_obs such that
 
-.. code-block::
+```python
 
-  y_obs = y[mask==1]
+  y_obs = y[mask == 1]
+
+```
 
 The mecm package implements a method to estimate :math:`\beta` and S(f) given y_obs,
 A and mask.
@@ -83,8 +85,6 @@ You can also install it directly from the Python Package Index with this command
 
 
 
-
-
 Licence
 -------
 
@@ -106,7 +106,7 @@ To begin with, we generate some simple time series which contains noise and sign
 To generate the noise, we start with a white, zero-mean Gaussian noise that
 we then filter to obtain a stationary colored noise:
 
-.. code-block::
+```python
 
   # Import mecm and other useful packages
   import mecm
@@ -122,18 +122,20 @@ we then filter to obtain a stationary colored noise:
   b, a = signal.butter(3, 0.1/0.5, btype='high', analog=False)
   n = signal.lfilter(b, a, noise, axis=-1, zi=None) + noise*r
 
+```
 
 
 Then we need a deterministic signal to add. We choose a sinusoid with some
 frequency f0 and amplitude a0:
 
-.. code-block::
+```python
 
   t = np.arange(0, n_data)
   f0 = 1e-2
   a0 = 5e-3
   s = a0*np.sin(2*np.pi*f0*t)
 
+```
 We just have generated a time series that can be written in the form
 
 .. math::
@@ -144,14 +146,14 @@ Now assume that some data are missing, i.e. the time series is cut by random gap
 The pattern is represented by a mask vector mask with entries equal to 1 when data
 is observed, and 0 otherwise:
 
-.. code-block::
-
+```python
   mask = np.ones(n_data)
   n_gaps = 30
   gapstarts = (n_data*np.random.random(n_gaps)).astype(int)
   gaplength = 10
   gapends = (gapstarts+gaplength).astype(int)
   for k in range(n_gaps): mask[gapstarts[k]:gapends[k]]= 0
+```
 
 Therefore, we do not observe y but its masked version, mask*y.
 
@@ -162,21 +164,25 @@ of the sine wave whose frequency and phase are known, along with the PSD of the
 noise residuals.
 The available data is
 
-.. code-block::
-
+```python
   y = mask * (s + n)
+```
 
 We must specify the design matrix (i.e. the data model) by:
 
-.. code-block::
+```python
 
   A = np.array([np.sin(2*np.pi*f0*t)]).T
 
+```
+
 Then we can just run the mecm maximum likelihood estimator, by writing:
 
-.. code-block::
+```python
 
   a0_est, a0_cov, a0_vect, y_rec, p_cond, PSD, success = mecm.maxlike(y,mask,A)
+
+```
 
 The result of this function is, in the order provided: the estimated amplitude,
 its estimated covariance, the vector containing the amplitude updates at each
