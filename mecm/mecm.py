@@ -11,10 +11,11 @@ import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
 import random
 import copy
-from .matrixalgebra import cov_linear_op, precondLinearOp, matPrecondBiCGSTAB
+from .matrixalgebra import cov_linear_op, precondLinearOp, matprecondBiCGSTAB
 from .matrixalgebra import mat_vect_prod, pcg_solve
 from .noise import generateNoiseFromDSP
-from .leastsquares import pmesureWeighted, pmesure_optimized_TF
+# from .leastsquares import pmesureWeighted, pmesure_optimized_TF
+from . import leastsquares
 from .localestimator import nextpow2, PSD_estimate
 from .psd import PSDSpline
 pyfftw.interfaces.cache.enable()
@@ -23,11 +24,28 @@ pyfftw.interfaces.cache.enable()
 class MECM:
 
     def __init__(self, y, mask, a_mat, psd_cls, eps=1e-3, p=20,
-                 nd=10, nit_cg=1000, tol_cg=1e-4, pcg_algo='scipy'):
+                 nd=10, nit_cg=1000, tol_cg=1e-4, pcg_algo='scipy',
+                 mask0=None):
 
         self.y = y
         self.mask = mask
+        if mask0 is None:
+            self.mask0 = mask[:]
+        else:
+            self.mask0 = mask0
         self.a_mat = a_mat
+        # Number of data points
+        self.n_data = y.shape[0]
+        # Number of Fourier frequencies used for the spectrum calculation
+        if self.n_data % 2 == 0:
+            self.n_fft = np.int(2 * self.n_data)
+        else:
+            self.n_fft = np.int(2**nextpow2(2 * self.n_data))
+        # Physical model in the frequency domain
+        # ----------------------------------------------------------------------
+        # Apodization
+        self.wd = np.hanning(self.n_data)
+
         self.psd_cls = psd_cls
         self.eps = eps
         self.p = p
@@ -36,59 +54,131 @@ class MECM:
         self.tol_cg = tol_cg
         self.pcg_algo = pcg_algo
 
+        # Indices of missing data
+        self.ind_mis = np.where(self.mask == 0)[0]
+        # Indices of observed data
+        self.ind_obs = np.where(self.mask == 1)[0]
+
         # Store the information about the output of the PCG computations
         self.infos = []
+        # PSD Initialization
+        self.p_cond_mean = periodogram(self.mask0 * (self.y - self.y.mean()),
+                                       self.n_data,
+                                       wind=self.wd * self.mask0)
 
-        # Initialization
-        # First guess: ordinary least squares
-        beta0 = pmesureWeighted(y * mask, a_mat, mask)
-        self.beta0_norm = LA.norm(beta0)
+        self.psd_cls.estimate_from_periodogram(self.p_cond_mean)
+        # self.psd_cls.estimate(self.res, wind=self.wd * self.mask0)
+        self.s_n = psd_cls.calculate(self.n_data)
+        self.s_2n = psd_cls.calculate(self.n_fft)
+        # Imputed data initialization
+        self.y_rec = y[:]
+
+        # Initialization of regression parameters
+        # First guess
+        # Linear regression
+        # --------------------------------------------------------------------------
+        print("Perform linear regression...")
+        a_mat_mask = a_mat * np.array([self.wd * self.mask0]).T
+        # In the frequency domain
+        self.a_mat_mask_dft = fft(a_mat_mask, axis=0)
+        self.y_dft = fft(self.y * self.wd * self.mask0)
+        # Estimate vector of amplitudes
+        self.beta = np.real(leastsquares.generalized_least_squares(
+            self.a_mat_mask_dft, self.y_dft, self.s_n))
+        # Estimate covariance
+        print("Complete.")
+        self.beta0_norm = LA.norm(self.beta)
         # History of estimates N_iterations x K
-        self.beta_vect = copy.deepcopy(beta0)
-
+        self.beta_vect = copy.deepcopy(self.beta)
         # Initialization of variables
-        self.beta = copy.deepcopy(beta0)
-        self.beta_old = np.zeros(beta0.shape[0])
+        self.beta_old = np.zeros(self.beta.shape[0])
+
+        # Initialization of estimated signal
+        self.signal = np.dot(self.a_mat, self.beta)
+        # Initialize regression residuals
+        self.res = self.mask0 * (self.y - self.signal)
 
         # Difference from one update to the other
         self.diff = 1.
-        # Number of data points
-        self.n_data = len(y)
-        # Number of Fourier frequencies used for the spectrum calculation
-        if self.n_data % 2 == 0:
-            self.n_fft = np.int(2 * self.n_data)
-        else:
-            self.n_fft = np.int(2**nextpow2(2 * self.n_data))
-
+        # Iteration counter (just for printing purposes)
         self.counter = 0
+        # Preconditionning linear operator
         self.precond_solver = None
-        self.p_cond_mean = periodogram(mask*(y - np.dot(a_mat, beta0)),
-                                       y.shape[0],
-                                       wind=np.hanning(y.shape[0])*mask)
 
-        # PSD Initialization
-        self.psd_cls.estimate_from_periodogram(self.p_cond_mean)
-        # self.psd_cls.estimate(mask*(y - np.dot(a_mat, beta0)))
-        self.s_n = psd_cls.calculate(self.n_data)
-        self.s_2n = psd_cls.calculate(self.n_fft)
+    def c_mo(self, v):
+        """Covariance missing / observed data : matrix operator
 
-        self.y_rec = y[:]
+        Parameters
+        ----------
+        v : ndarray
+            vector on which to perform the product C_mo v
+
+        Returns
+        -------
+        ndarray
+            vector = C_mo v
+        """
+
+        return mat_vect_prod(v, self.ind_obs, self.ind_mis, self.mask,
+                             self.s_2n)
+
+    def draw_residuals(self):
+
+        # Draws a full time series following prescribed estimated PSD
+        e = np.real(generateNoiseFromDSP(
+            np.sqrt(self.s_2n*2.), 1.)[0:self.n_data])
+        # Solve the linear system C_oo x = Z_o - Z_tilde_o
+        uo, info = pcg_solve(self.ind_obs, self.mask, self.s_2n,
+                             e[self.ind_obs], np.zeros(len(self.ind_obs)),
+                             self.tol_cg, self.nit_cg,
+                             self.precond_solver, self.pcg_algo)
+        # Z u | o = Z_tilde_u + Cmo Coo^-1 ( Z_o - Z_tilde_o )
+        eps = e[self.ind_mis] + self.c_mo(uo)
+
+        return eps
 
     def e_step(self):
 
         # E step : missing data reconstruction
         # ------------------------------------
-        self.y_rec, self.precond_solver = conj_grad_imputation(
-            self.y, self.a_mat, self.beta, self.mask, self.s_2n,
-            self.p, self.nit_cg, self.pcg_algo,
-            precond_solver=self.precond_solver,
-            tol=self.tol_cg, store_info=self.infos)
+        # Compute autocovariance
+        autocorr = self.psd_cls.calculate_autocorr(self.n_data)
+        # Compute preconditionner if not already done
+        if self.precond_solver is None:
+            print("Build preconditionner...")
+            self.precond_solver = compute_precond(autocorr, self.mask,
+                                                  p=self.p,
+                                                  taper='Wendland2')
+            print("Preconditionner built.")
+        # First guess
+        x0 = np.zeros(len(self.ind_obs))
+        # Solve the linear system C_oo x = eps where eps are the residuals
+        u, info = pcg_solve(self.ind_obs, self.mask, self.s_2n,
+                            self.res[self.ind_obs], x0,
+                            self.tol_cg, self.nit_cg,
+                            self.precond_solver, self.pcg_algo)
+        # Estimate the missing data residuals via z | o = Cmo Coo^-1 z_o
+        y_mis_res = mat_vect_prod(u, self.ind_obs, self.ind_mis,
+                                  self.mask, self.s_2n)
+        # Construct the full imputed data vector
+        self.y_rec = self.y[:]
+        self.y_rec[self.ind_mis] = y_mis_res + self.signal[self.ind_mis]
 
-        # Conditional draws
-        cond_draws = cond_monte_carlo(
-            self.mask * (self.y - np.dot(self.a_mat, self.beta)),
-            self.precond_solver, self.mask, self.nd, self.s_2n, self.nit_cg,
-            self.pcg_algo, tol=self.tol_cg, store_info=self.infos)
+        # To compute the expectation of second-order statistics, we should
+        # do some random draws
+        cond_draws = np.array([self.draw_residuals() for i in range(self.nd)])
+
+        # self.y_rec, self.precond_solver = conj_grad_imputation(
+        #     self.y, self.a_mat, self.beta, self.mask, self.s_2n,
+        #     self.p, self.nit_cg, self.pcg_algo,
+        #     precond_solver=self.precond_solver,
+        #     tol=self.tol_cg, store_info=self.infos)
+        #
+        # # Conditional draws
+        # cond_draws = cond_monte_carlo(
+        #     self.mask * (self.y - np.dot(self.a_mat, self.beta)),
+        #     self.precond_solver, self.mask, self.nd, self.s_2n, self.nit_cg,
+        #     self.pcg_algo, tol=self.tol_cg, store_info=self.infos)
 
         # Periodogram of the draws
         p_mat = periodogram(cond_draws, cond_draws.shape[1])
@@ -99,10 +189,17 @@ class MECM:
 
         # CM1 step : estimation of deterministic model parameters
         # -------------------------------------------------------
+        # Keep in mind the old value of parameters
         self.beta_old = self.beta[:]
+        # Update parameter vector
         self.beta = np.real(pmesure_optimized_TF(self.y_rec, self.a_mat,
                                                  self.s_n))
+        # Store the new estimated value
         self.beta_vect = np.vstack((self.beta_vect, self.beta))
+        # Update the estimated signal
+        self.signal = np.dot(self.a_mat, self.beta)
+        # Update estimation residuals
+        self.res = self.y_rec - self.signal
 
     def cm2_step(self):
 
@@ -310,12 +407,12 @@ def mecmcovariance(a_mat, mask, s_2n, solve, pcg_algo, n_it=150, tol=1e-7,
     if pcg_algo == 'mine':
         def coo_func(x):
             return mat_vect_prod(x, ind_obs, ind_obs, mask, s_2n)
-        U = matPrecondBiCGSTAB(x0, A_obs, coo_func, n_it, tol, solve,
+        U = matprecondBiCGSTAB(x0, A_obs, coo_func, n_it, tol, solve,
                                pcg_algo=pcg_algo, nthreads=nthreads)
     elif 'scipy' in pcg_algo:
         Coo_op = cov_linear_op(ind_obs, ind_obs, mask, s_2n)
         P_op = precondLinearOp(solve, len(ind_obs), len(ind_obs))
-        U = matPrecondBiCGSTAB(x0, A_obs, Coo_op, n_it, tol, P_op,
+        U = matprecondBiCGSTAB(x0, A_obs, Coo_op, n_it, tol, P_op,
                                pcg_algo=pcg_algo, nthreads=nthreads)
         # innerPrecondBiCGSTAB(U,x0,A_obs,Coo_op,n_it,tol,P_op,pcg_algo)
 
