@@ -1,13 +1,34 @@
 # -*- coding: cp1252 -*-
 import numpy as np
-from numpy import linalg as LA
+from numpy import linalg as la
 import pyfftw
 from pyfftw.interfaces.numpy_fft import fft, ifft
 # Enable the cache to save FFTW plan to perform faster fft for the subsequent calls of pyfftw
 pyfftw.interfaces.cache.enable()
 
 
-def pmesure_optimized_TF(Y,A,S) :
+def least_squares(mat, y):
+
+    return la.pinv(mat.conjugate().transpose().dot(mat)).dot(mat.conjugate().transpose().dot(y))
+
+
+def generalized_least_squares(mat_dft, y_dft, psd):
+    mat_w = np.array([mat_dft[:, j] / psd for j in range(mat_dft.shape[1])]).T
+    # Inverse normal matrix
+    ZI = la.pinv(np.dot(np.transpose(mat_dft).conj(), mat_w))
+    return ZI.dot(np.transpose(mat_w).conj().dot(y_dft))
+
+
+def gsl_covariance(mat_dft, psd):
+
+    mat_dft_normalized = mat_dft / np.sqrt(mat_dft.shape[0])
+    mat_w = np.array([mat_dft_normalized[:, j] / psd
+                      for j in range(mat_dft_normalized.shape[1])]).T
+
+    return la.pinv(np.dot(np.transpose(mat_dft_normalized).conj(), mat_w))
+
+
+def pmesure_optimized_TF(Y, A, S) :
     """
     Function calculating the estimator of a set of parameters X with optimal
     ponderation.
@@ -64,7 +85,7 @@ def pmesure_optimized_TF(Y,A,S) :
     ApS = np.complex64(ApS)
 
     Z = np.dot(np.transpose(ApS).conj(),ApS)
-    ZI = LA.inv(Z)
+    ZI = la.inv(Z)
     Y_TF = fft(Y,n=N_fft)/np.sqrt(S)
 
     # Calculate
@@ -121,12 +142,12 @@ def pmesureWeighted(Y, A, P) :
     #Ap = Ap.astype(np.complex64())
 
     ## Calculation of the inverse matrix of At*A
-    #NI = LA.inv(np.dot(np.transpose(Ap).conj(),Ap))
+    #NI = la.inv(np.dot(np.transpose(Ap).conj(),Ap))
 
     ## The estimator is equal to (A*P*PA)^-1 A*P*PY
     #X = np.dot( NI , np.dot( np.transpose(Ap).conj() , P * Y ) )
 
-    return np.dot( LA.inv( np.dot( Ap.T, Ap ) ) , np.dot( Ap.T, P*Y) )
+    return np.dot( la.inv( np.dot( Ap.T, Ap ) ) , np.dot( Ap.T, P*Y) )
 
 
 
@@ -160,7 +181,7 @@ def pmesureMatrix(Y,A,P) :
     Yp = np.dot(P,Y)
     Ap = np.dot(P,A)
 
-    NI = LA.inv( np.dot( np.conjugate(Ap).T , Ap ) )
+    NI = la.inv( np.dot( np.conjugate(Ap).T , Ap ) )
 
     X = np.dot( NI, np.dot( np.conjugate(Ap).T , Yp ) )
 
