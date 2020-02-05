@@ -137,9 +137,7 @@ frequency f0 and amplitude a0:
 ```
 We just have generated a time series that can be written in the form
 
-```math
-  y = A \beta + n
-```
+![equation](https://latex.codecogs.com/gif.latex?y&space;=&space;A&space;\beta&space;&plus;&space;n)
 
 Now assume that some data are missing, i.e. the time series is cut by random gaps.
 The pattern is represented by a mask vector mask with entries equal to 1 when data

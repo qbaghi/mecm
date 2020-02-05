@@ -76,10 +76,11 @@ class MECM:
         # Initialization of regression parameters
         # First guess
         # Linear regression
-        # --------------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         print("Perform linear regression...")
         a_mat_mask = a_mat * np.array([self.wd * self.mask0]).T
         # In the frequency domain
+        self.a_mat_dft = fft(a_mat * np.array([self.wd]).T, axis=0)
         self.a_mat_mask_dft = fft(a_mat_mask, axis=0)
         self.y_dft = fft(self.y * self.wd * self.mask0)
         # Estimate vector of amplitudes
@@ -122,18 +123,43 @@ class MECM:
         return mat_vect_prod(v, self.ind_obs, self.ind_mis, self.mask,
                              self.s_2n)
 
-    def draw_residuals(self):
+    def draw_residuals(self, mu_z_m_given_o):
+        """Draw a realization of the imputed vector of residuals
+
+        Parameters
+        ----------
+        mu_z_m_given_o : ndarray
+            Conditional expectation of the missing data residuals given the
+            observed data.
+
+        Returns
+        -------
+        eps : ndarray
+            drawn full conditional vector of residuals
+
+        """
 
         # Draws a full time series following prescribed estimated PSD
         e = np.real(generateNoiseFromDSP(
             np.sqrt(self.s_2n*2.), 1.)[0:self.n_data])
-        # Solve the linear system C_oo x = Z_o - Z_tilde_o
+        # Solve the linear system C_oo x = Z_o. x = z*_o
         uo, info = pcg_solve(self.ind_obs, self.mask, self.s_2n,
                              e[self.ind_obs], np.zeros(len(self.ind_obs)),
                              self.tol_cg, self.nit_cg,
                              self.precond_solver, self.pcg_algo)
-        # Z u | o = Z_tilde_u + Cmo Coo^-1 ( Z_o - Z_tilde_o )
-        eps = e[self.ind_mis] + self.c_mo(uo)
+        self.infos.append(info)
+        # Z u | o = Z_tilde_m + Cmo Coo^-1 ( Z_o - Z_star_o )
+        # u = Cmo Coo^-1 Z_star_o
+        u_m_o = mat_vect_prod(uo, self.ind_obs, self.ind_mis, self.mask,
+                              self.s_2n)
+
+        eps = np.zeros(self.n_data)
+        # Observed data points
+        eps[self.ind_obs] = self.res[self.ind_obs]
+        # Missing data points and extension to 2N points
+        # Z_star_m|o = mu_z_m|o + z*_m - Cmo Coo^-1 z*_o
+        eps[self.ind_mis] = mu_z_m_given_o + e[self.ind_mis] - u_m_o
+        # eps = e[self.ind_mis] + self.c_mo(uo)
 
         return eps
 
@@ -166,7 +192,17 @@ class MECM:
 
         # To compute the expectation of second-order statistics, we should
         # do some random draws
-        cond_draws = np.array([self.draw_residuals() for i in range(self.nd)])
+        if self.nd > 1:
+            cond_draws = np.array([self.draw_residuals(y_mis_res)
+                                   for i in range(self.nd)])
+            # Periodogram of the draws
+            p_mat = periodogram(cond_draws, self.n_data)
+            # Conditional average
+            self.p_cond_mean = np.mean(p_mat, axis=0)
+
+        elif self.nd == 1:
+            cond_draw = self.draw_residuals(y_mis_res)
+            self.p_cond_mean = periodogram(cond_draw, self.n_data)
 
         # self.y_rec, self.precond_solver = conj_grad_imputation(
         #     self.y, self.a_mat, self.beta, self.mask, self.s_2n,
@@ -180,30 +216,27 @@ class MECM:
         #     self.precond_solver, self.mask, self.nd, self.s_2n, self.nit_cg,
         #     self.pcg_algo, tol=self.tol_cg, store_info=self.infos)
 
-        # Periodogram of the draws
-        p_mat = periodogram(cond_draws, cond_draws.shape[1])
-        # Conditional average
-        self.p_cond_mean = np.mean(p_mat, axis=0)
+    def cm2_step(self):
 
-    def cm1_step(self):
-
-        # CM1 step : estimation of deterministic model parameters
+        # CM2 step : estimation of deterministic model parameters
         # -------------------------------------------------------
         # Keep in mind the old value of parameters
         self.beta_old = self.beta[:]
+        # Update data FFT
+        self.y_dft = fft(self.y_rec * self.wd)
         # Update parameter vector
-        self.beta = np.real(pmesure_optimized_TF(self.y_rec, self.a_mat,
-                                                 self.s_n))
-        # Store the new estimated value
+        # Estimate vector of amplitudes
+        self.beta = np.real(leastsquares.generalized_least_squares(
+            self.a_mat_dft, self.y_dft, self.s_n))
         self.beta_vect = np.vstack((self.beta_vect, self.beta))
         # Update the estimated signal
         self.signal = np.dot(self.a_mat, self.beta)
         # Update estimation residuals
         self.res = self.y_rec - self.signal
 
-    def cm2_step(self):
+    def cm1_step(self):
 
-        # CM2 step : estimation of noise model parameters (PSD)
+        # CM1 step : estimation of noise model parameters (PSD)
         # -------------------------------------------------------
         # PSD.MLestimateFromI(p_cond_mean, Niter=1)
         self.psd_cls.estimate_from_periodogram(self.p_cond_mean)
@@ -246,7 +279,7 @@ class MECM:
 
 def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
             nit_cg=1000, tol_cg=1e-4, compute_cov=True, verbose=True,
-            pcg_algo='scipy', psd_cls=None):
+            pcg_algo='scipy', psd_cls=None, mask0=None):
     """
 
     Function estimating the regression parameters for a problem of
@@ -290,6 +323,10 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
         Type of preconditioned conjugate gradient (PCG) algorithm to use.
     psd_cls : psd.PSDSpline instance or None
         PSD model class
+    mask0 : numpy array (size n_data)
+        initial mask vector (with entries equal to 0 or 1), to use for the
+        initialization only. Should be less conservative (less dense) than
+        the regular mask.
 
     Returns
     -------
@@ -335,7 +372,8 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
         #                     fmin=None, fmax=None, f_knots=None, ext=3)
     # Intantiate ECM class
     ecm = MECM(y, mask, a_mat, psd_cls, eps=eps, p=p,
-               nd=nd, nit_cg=nit_cg, tol_cg=tol_cg, pcg_algo=pcg_algo)
+               nd=nd, nit_cg=nit_cg, tol_cg=tol_cg, pcg_algo=pcg_algo,
+               mask0=mask0)
 
     # Run M-ECM iterations alternating betweeb E-steps and M-steps
     [ecm.ecm_step(verbose=verbose) for i in range(n_it_max)]
