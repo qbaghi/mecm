@@ -19,13 +19,49 @@ def generalized_least_squares(mat_dft, y_dft, psd):
     return ZI.dot(np.transpose(mat_w).conj().dot(y_dft))
 
 
-def gsl_covariance(mat_dft, psd):
+def gsl_covariance_freq(mat_dft, psd):
 
     mat_dft_normalized = mat_dft / np.sqrt(mat_dft.shape[0])
     mat_w = np.array([mat_dft_normalized[:, j] / psd
                       for j in range(mat_dft_normalized.shape[1])]).T
 
     return la.pinv(np.dot(np.transpose(mat_dft_normalized).conj(), mat_w))
+
+
+def gls_covariance_time(mat, psd):
+    """
+    Compute the covariance of the generalized least-square estimator for
+    a stationary noise.
+
+    Parameters
+    ----------
+    mat : ndarray
+        Model design matrix of size n_data x n_params
+    psd : ndarray
+        Noise power spectrum = PSD * fs / 2 where fs is the sampling frequency
+        and PSD is the one-sided noise power spectral density.
+
+    Returns
+    -------
+    type
+        Description of returned object.
+
+    """
+
+    # if type(wind) == str:
+    #     wd = np.hanning(mat.shape[0])
+    # elif type(wind) == np.ndarray:
+    #     wd = wind[:]
+
+    # Apply time-windowing
+    # mat_wind = mat * np.array([wd]).T
+    # Fourier transform the model
+    # mat_dft = fft(mat_wind, axis=0)
+
+    return gsl_covariance_freq(fft(mat, axis=0), psd)
+
+
+
 
 
 def pmesure_optimized_TF(Y, A, S) :
