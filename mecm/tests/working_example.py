@@ -4,10 +4,13 @@ import numpy as np
 from scipy import signal
 from matplotlib import pyplot as plt
 from pyfftw.interfaces.numpy_fft import fft
+import time
 
 
 if __name__ == '__main__':
 
+    # Fix the seed
+    np.random.seed(12354)
     # Choose size of data
     n_data = 2**14
     # Generate Gaussian white noise
@@ -40,8 +43,11 @@ if __name__ == '__main__':
     #                                       kind='linear')
     # Run the MECM algoritm to perform a joint estimation of the sine amplitude
     # and noise PSD
-    a0_est, a0_cov, a0_vect, y_rec, p_cond_mean, psd_cls, success = mecm.maxlike(
-        y, mask, a_mat, psd_cls=psd_cls)
+    t1 = time.time()
+    res = mecm.maxlike(y, mask, a_mat, psd_cls=psd_cls, pcg_algo='scipy')
+    t2 = time.time()
+    a0_est, a0_cov, a0_vect, y_rec, p_cond_mean, psd_cls, success, diff = res
+    print("Computation took " + str(t2 - t1) + " seconds.")
     # Plot the results
     f = np.fft.fftfreq(n_data)
     wN, H = signal.freqz(b, a, worN=f[f > 0] * (2 * np.pi), whole=False)

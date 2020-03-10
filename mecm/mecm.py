@@ -344,6 +344,8 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
         conditional expectation of the noise periodogram
     PSD : PSD_estimate class instance
         class containing all the information regarding the estimated noise PSD
+    diff : float
+        M-ECM convergence criterium de/e on the parameter of interest
 
 
     References
@@ -395,7 +397,7 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
         cov = None
 
     return (ecm.beta, cov, ecm.beta_vect, ecm.y_rec[0:ecm.n_data],
-            ecm.p_cond_mean, ecm.psd_cls, success)
+            ecm.p_cond_mean, ecm.psd_cls, success, ecm.diff)
 
 
 # ==============================================================================

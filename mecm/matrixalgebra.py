@@ -233,7 +233,7 @@ def precond_bicgstab(x0, b, a_func, n_it, stp, P, z0_hat=None, verbose=True):
     return x, sr, info  # ,sz
 
 
-def innerPrecondBiCGSTAB(result,x0,B,a_func,n_it,stp,P,pcg_algo):
+def innerPrecondBiCGSTAB(result, x0, B, a_func, n_it, stp, P, pcg_algo):
     """
     Inner function of the multithreading process.
     This is used to solve the linear system
@@ -270,12 +270,13 @@ def innerPrecondBiCGSTAB(result,x0,B,a_func,n_it,stp,P,pcg_algo):
     if pcg_algo == 'mine':
         for k in range(result.shape[1]):
             # With my code:
-            result[:, k], sr, info = precond_bicgstab(x0,B[:,k],a_func,n_it,stp,P)
+            result[:, k], sr, info = precond_bicgstab(x0, B[:,k], a_func, n_it,
+                                                      stp, P)
             print("PCG complete for parameter "+str(k))
 
     elif 'scipy' in pcg_algo:
         for k in range(result.shape[1]):
-            tol_eff = np.min([stp, stp*LA.norm(B[:,k])])
+            tol_eff = np.min([stp, stp * LA.norm(B[:, k])])
             if (pcg_algo == 'scipy') | (pcg_algo == 'scipy.bicgstab'):
                 result[:, k], info = sparse.linalg.bicgstab(a_func, B[:, k],
                                                             x0=x0,
@@ -318,8 +319,11 @@ def innerPrecondBiCGSTAB(result,x0,B,a_func,n_it,stp,P,pcg_algo):
                 raise ValueError("Unknown PCG algorithm name")
             print("PCG complete for parameter "+str(k) + ", with exit status:")
             print_pcg_status(info)
+            # print("Value of || A * x - b ||/||b|| at exit:")
+            # print(str(LA.norm(result[:, k]-B[:, k])/LA.norm(B[:, k])))
             print("Value of || A * x - b ||/||b|| at exit:")
-            print(str(LA.norm(result[:, k]-B[:, k])/LA.norm(B[:, k])))
+            print(str(LA.norm(a_func(result[:, k])
+                              - B[:, k])/LA.norm(B[:, k])))
 
 
 def print_pcg_status(info):
@@ -381,7 +385,8 @@ def make_multithread(inner_func, numthreads):
     return func_mt
 
 
-def matprecondBiCGSTAB(x0,B,a_func,n_it,stp,P,pcg_algo = 'scipy', nthreads=4):
+def matprecondBiCGSTAB(x0, B, a_func, n_it, stp, P, pcg_algo='scipy',
+                       nthreads=4):
     """
     Function that solves the linear system
     X = A^-1 B where B is a matrix, by applying the preconditioned stabilized
@@ -418,11 +423,12 @@ def matprecondBiCGSTAB(x0,B,a_func,n_it,stp,P,pcg_algo = 'scipy', nthreads=4):
     """
 
     if nthreads > 1:
-        func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB, nthreads)
-        res = func_PrecondBiCGSTAB_mt(x0,B,a_func,n_it,stp,P,pcg_algo)
+        func_PrecondBiCGSTAB_mt = make_multithread(innerPrecondBiCGSTAB,
+                                                   nthreads)
+        res = func_PrecondBiCGSTAB_mt(x0, B, a_func, n_it, stp, P, pcg_algo)
 
     elif nthreads == 1:
-        res = np.empty((len(x0),B.shape[1]),dtype=np.float64)
+        res = np.empty((len(x0), B.shape[1]), dtype=np.float64)
         innerPrecondBiCGSTAB(res, x0, B, a_func, n_it, stp, P, pcg_algo)
 
     return res

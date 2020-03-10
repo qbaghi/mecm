@@ -177,7 +177,8 @@ Then we can just run the mecm maximum likelihood estimator, by writing:
 
 ```python
 
-  a0_est, a0_cov, a0_vect, y_rec, p_cond, PSD, success = mecm.maxlike(y, mask, A)
+  result = mecm.maxlike(y, mask, A)
+  a0_est, a0_cov, a0_vect, y_rec, p_cond, psd_cls, success, diff = result
 
 ```
 
