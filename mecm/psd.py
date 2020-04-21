@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 # Author: Quentin Baghi 2017
 # This code provides routines for PSD estimation using a peace-continuous model
@@ -209,7 +208,10 @@ class PSDSpline(PSD):
         n_knots = n0 - (1-alpha**jvect)/(1-alpha)
         f_knots = base**(-n_knots)
 
-        return f_knots
+        # Eliminate the edges to satisfy Schoenberg-Whitney conditions
+        f_knots = f_knots[(f_knots > self.fmin) & (f_knots < self.fmax)]
+
+        return np.sort(f_knots)
 
     def estimate(self, y, wind='hanning'):
         """
