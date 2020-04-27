@@ -209,7 +209,8 @@ class PSDSpline(PSD):
         f_knots = base**(-n_knots)
 
         # Eliminate the edges to satisfy Schoenberg-Whitney conditions
-        f_knots = f_knots[(f_knots > self.fmin) & (f_knots < self.fmax)]
+        # f_knots = f_knots[(f_knots > self.fmin) & (f_knots < self.fmax)]
+        f_knots = f_knots[1:-1]
 
         return np.sort(f_knots)
 
