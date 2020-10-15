@@ -328,7 +328,7 @@ def localMLEstimator(data,f,fj,h,a0,b0,ker = 'epa',Niter = 1,ST_given = None):
 
 
 # ==============================================================================
-class PSD_estimate:
+class PSDEstimate:
     """
     Class providing methods to estimate and calculate the power spectral density
     of 1-D stationary processes with continuous, smooth spectrum.
@@ -753,6 +753,14 @@ class PSD_estimate:
         ci_up =  np.real( np.exp(np.log(S_est) + z*np.sqrt( variance ) ) )
 
         return ci_low,ci_up
+    
+    def calculate_autocorr(self, n_data):
+        """
+        Compute the autocovariance function from the PSD.
+
+        """
+
+        return np.real(ifft(self.calculate(2*n_data))[0:n_data])
 
 
     def calculateST(self,f,h,N,ker = 'epa'):

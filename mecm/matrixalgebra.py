@@ -365,15 +365,14 @@ def make_multithread(inner_func, numthreads):
         length = args[1].shape[1]
         # Size of the ouput vectors that are solutions
         No = len(args[0])
-        result = np.empty((No,length),dtype=np.float64)
+        result = np.empty((No, length), dtype=np.float64)
         #args = (result,) + args
-
         chunklen = (length + numthreads - 1) // numthreads
         # Create argument tuples for each input chunk
         # arguments are x0,B,a_func,n_it,stp,P we only change B
-        chunks = [[result[:,i * chunklen:(i + 1) * chunklen],args[0],
-        args[1][:,i * chunklen:(i + 1) * chunklen],args[2],
-        args[3],args[4],args[5],args[6]] for i in range(numthreads)]
+        chunks = [[result[:, i * chunklen:(i + 1) * chunklen], args[0],
+        args[1][:, i * chunklen:(i + 1) * chunklen], args[2],
+        args[3], args[4], args[5], args[6]] for i in range(numthreads)]
         # Spawn one thread per chunk
         threads = [threading.Thread(target=inner_func, args=chunk)
                    for chunk in chunks]
@@ -524,7 +523,7 @@ def matmatProd(a_in, ind_in, ind_out, mask, s_2n):
 
 
 # ==============================================================================
-def cov_linear_op(ind_in,ind_out,mask,s_2n):
+def cov_linear_op(ind_in, ind_out, mask, s_2n):
     """
     Construct a linear operator object that computes the operation C * v
     for any vector v, where C is a covariance matrix.
@@ -558,31 +557,34 @@ def cov_linear_op(ind_in,ind_out,mask,s_2n):
 
     """
 
-    C_func = lambda x: mat_vect_prod(x,ind_in,ind_out,mask,s_2n)
-    CH_func = lambda x: mat_vect_prod(x,ind_out,ind_in,mask,s_2n)
-    Cmat_func = lambda X: matmatProd(X,ind_in,ind_out,mask,s_2n)
-
+    C_func = lambda x: mat_vect_prod(x, ind_in, ind_out, mask, s_2n)
+    CH_func = lambda x: mat_vect_prod(x, ind_out, ind_in, mask, s_2n)
+    Cmat_func = lambda X: matmatProd(X, ind_in, ind_out, mask, s_2n)
 
     N_in = len(ind_in)
     N_out = len(ind_out)
-    Coi_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=C_func,
-    rmatvec = CH_func,matmat = Cmat_func,dtype=np.float64)
+    Coi_op = sparse.linalg.LinearOperator(shape=(N_out, N_in), matvec=C_func,
+                                          rmatvec=CH_func, matmat=Cmat_func,
+                                          dtype=np.float64)
 
     return Coi_op
 
+
 # ==============================================================================
-def precondLinearOp(solver,N_out,N_in):
+def precondLinearOp(solver, N_out, N_in):
 
     P_func = lambda x: solver(x)
     PH_func = lambda x: solver(x)
+
     def Pmat_func(X):
         # Z = np.empty((N_out,X.shape[1]),dtype = np.float64)
         # for j in range(X.shape[1]):
         #     Z[:,j] = solver(X[:,j])
-        return np.array([solver(X[:,j]) for j in range(X.shape[1])]).T
+        return np.array([solver(X[:, j]) for j in range(X.shape[1])]).T
 
-    p_op = sparse.linalg.LinearOperator(shape = (N_out,N_in),matvec=P_func,
-    rmatvec = PH_func,matmat = Pmat_func,dtype=np.float64)
+    p_op = sparse.linalg.LinearOperator(shape=(N_out, N_in), matvec=P_func,
+                                        rmatvec=PH_func, matmat=Pmat_func,
+                                        dtype=np.float64)
 
     return p_op
 

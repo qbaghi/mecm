@@ -16,7 +16,7 @@ from .matrixalgebra import mat_vect_prod, pcg_solve
 from .noise import generateNoiseFromDSP
 # from .leastsquares import pmesureWeighted, pmesure_optimized_TF
 from . import leastsquares
-from .localestimator import nextpow2, PSD_estimate
+from .localestimator import nextpow2, PSDEstimate
 from .psd import PSDSpline
 pyfftw.interfaces.cache.enable()
 
@@ -369,7 +369,7 @@ def maxlike(y, mask, a_mat, n_it_max=15, eps=1e-3, p=20, nd=10, n_est=100,
             n_fft = np.int(2 * n_data)
         else:
             n_fft = np.int(2**nextpow2(2 * n_data))
-        psd_cls = PSD_estimate(n_est, n_data, n_fft, h_min=None, h_max=None)
+        psd_cls = PSDEstimate(n_est, n_data, n_fft, h_min=None, h_max=None)
         # psd_cls = PSDSpline(n_data, 1.0, n_knots=30, d=3,
         #                     fmin=None, fmax=None, f_knots=None, ext=3)
     # Intantiate ECM class

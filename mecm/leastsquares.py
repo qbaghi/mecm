@@ -13,6 +13,24 @@ def least_squares(mat, y):
 
 
 def generalized_least_squares(mat_dft, y_dft, psd):
+    """
+    Computes the generalized least-squares estimate (GLS).
+
+    Parameters
+    ----------
+    mat_dft : ndarray
+        Design matrix in the Fourier domain, size n x p
+    y_dft : ndarray
+        Vector of observations in the Fourier domain, size n
+    psd : ndarray
+        Power spectral density of the noise, size n. 
+        Does not need to be properly normalized.
+
+    Returns
+    -------
+    beta : ndarray
+        Estimated regression parameter, size p.
+    """
     mat_w = np.array([mat_dft[:, j] / psd for j in range(mat_dft.shape[1])]).T
     # Inverse normal matrix
     ZI = la.pinv(np.dot(np.transpose(mat_dft).conj(), mat_w))
@@ -20,6 +38,24 @@ def generalized_least_squares(mat_dft, y_dft, psd):
 
 
 def gsl_covariance_freq(mat_dft, psd):
+    """
+    Computes the covariance of the generalized least-squares estimate (GLS).
+
+    Parameters
+    ----------
+    mat_dft : ndarray
+        Design matrix in the Fourier domain, size n x p.
+        Should be in the form of Python's FFT, without any normalization.
+    psd : ndarray
+        Power spectral density of the noise, size n. 
+        Should be normalized as psd = S * fs / 2 where fs is the sampling 
+        frequency and S is the one-sided noise power spectral density.
+
+    Returns
+    -------
+    cov_beta : ndarray
+        GLS covariance matrix, size p x p.
+    """
 
     mat_dft_normalized = mat_dft / np.sqrt(mat_dft.shape[0])
     mat_w = np.array([mat_dft_normalized[:, j] / psd
