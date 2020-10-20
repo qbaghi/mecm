@@ -432,8 +432,12 @@ class PSDEstimate:
         self.m_est = None
         self.ker = ker
         self.ST,self.V = self.calculateST(self.f_est,self.h,N,ker = ker)
-        self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],
-        self.V[self.f_est>0]*np.pi**2/6.,kind = self.kind)
+        self.PSD_variance_function = interpolate.interp1d(
+            self.f_est[self.f_est>0],
+            self.V[self.f_est>0]*np.pi**2/6.,
+            kind=self.kind,
+            bounds_error=False,
+            fill_value="extrapolate")
 
     def choose_knots(self,J,fmin,fmax):
         """
@@ -559,12 +563,15 @@ class PSDEstimate:
         # Calculate the interpolation function
         self.logPSD_function = interpolate.interp1d(self.logf_est, self.m_est,
                                                     kind=self.kind,
+                                                    bounds_error=False,
                                                     fill_value="extrapolate")
 
         if variance:
             self.PSD_variance_function = interpolate.interp1d(
-                self.logf_est, V[self.f_est > 0] * np.pi**2/6., kind=self.kind,
-                fill_value='extrapolate')
+                self.logf_est, V[self.f_est > 0] * np.pi**2/6., 
+                kind=self.kind,
+                bounds_error=False,
+                fill_value="extrapolate")
 
     def ml_estimate_from_per(self, per, Niter=1, variance=False):
         """
@@ -611,6 +618,7 @@ class PSDEstimate:
         self.logPSD_function = interpolate.interp1d(self.logf,
                                                     self.m_est,
                                                     kind=self.kind,
+                                                    bounds_error=False,
                                                     fill_value="extrapolate")
         # Interpolate the PSD itself, not the log-psd
         # self.PSD_function = interpolate.interp1d(self.f_est,self.S_est,
@@ -619,7 +627,10 @@ class PSDEstimate:
         if variance:
             # Calcualte the variance interpolation function
             self.logPSD_function = interpolate.interp1d(self.logf,
-            V*np.pi**2/6., kind=self.kind, fill_value="extrapolate")
+            V*np.pi**2/6., 
+            bounds_error=False,
+            kind=self.kind, 
+            fill_value="extrapolate")
         #self.PSD_variance_function = interpolate.interp1d(self.f_est[self.f_est>0],V_est[self.f_est>0]*np.pi**2/6.)
 
     def MLestimate(self, x, Niter=1, variance=False):
