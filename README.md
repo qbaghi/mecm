@@ -28,14 +28,11 @@ where:
 
   * A is the design matrix (size n_data x K)
 
-  * :math:`\beta` is the vector of parameters to estimate (size K)
+  * <img src="https://latex.codecogs.com/gif.latex?\beta" />  is the vector of parameters to estimate (size K)
 
   * n is the noise vector, assumed to follow a Gaussian stationary distribution with a given smooth spectral density S(f)
 
-Now assume that only some entries of the vector y are observed. The indices of
-observed and missing data are provided by a binary mask vector mask, whose entries
-are equal to 1 when data are observed, 0 otherwise.
-So in fact we observe only a vector y_obs such that
+Now assume that only some entries of the vector y are observed. The indices of observed and missing data are provided by a binary mask vector mask, whose entries are equal to 1 when data are observed, 0 otherwise. So in fact we observe only a vector y_obs such that
 
 ```python
 
@@ -87,7 +84,7 @@ You can also install it directly from the Python Package Index with this command
 Licence
 -------
 
-See `licence file <https://github.com/Porlopopof/mecm/blob/master/LICENCE.txt>`_
+See [license file](https://github.com/qbaghi/mecm/blob/master/LICENCE.txt)
 
 
 Quick start guide
