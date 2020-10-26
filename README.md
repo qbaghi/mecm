@@ -48,9 +48,9 @@ The main methods of the package are:
 
   * maxlike: quasi-maximum likelihood estimation with missing data for gaussian stationary models of the form given above.
 
-  * PSD_estimate: a class to perform power spectral density estimation with local linear smoothers.
+  * PSDEstimate: a class to perform power spectral density estimation with local linear smoothers.
 
-  * conditionalDraw: a function computing the conditional expectation of the missing data conditionally on the observed data, assuming a Gaussian stationary model.
+  * cond_draw: a function computing the conditional expectation of the missing data conditionally on the observed data, assuming a Gaussian stationary model.
 
 
 
