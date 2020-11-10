@@ -987,11 +987,14 @@ def compute_precond(autocorr, mask, p=10, ptype='sparse', taper='Wendland2',
 
     if ptype == 'sparse':
         # Preconditionning : use sparse matrix
-        C = build_sparse_cov2(autocorr, p, n_data, form="csc", taper=taper)
+        c_mat = build_sparse_cov2(autocorr, p, n_data, form="csc", taper=taper)
         # Calculate the covariance matrix of the observed data
-        C_temp = C[:, ind_obs]
+        c_temp = c_mat[:, ind_obs]
         # Preconditionner
-        solve = sparse.linalg.factorized(C_temp[ind_obs, :])
+        solve = sparse.linalg.factorized(c_temp[ind_obs, :])
+        # Remove big variables
+        del c_temp
+        del c_mat
 
     elif ptype == 'circulant':
 
